@@ -1,14 +1,5 @@
 {
   "dependencies": {
-    "com.itisnajim.socketiounity": {
-      "version": "https://github.com/itisnajim/SocketIOUnity.git",
-      "depth": 0,
-      "source": "git",
-      "dependencies": {
-        "com.unity.nuget.newtonsoft-json": "3.0.2"
-      },
-      "hash": "47d10f6115a35c16cf77e3b30b031b4911c330bc"
-    },
     "com.unity.2d.sprite": {
       "version": "1.0.0",
       "depth": 0,
@@ -88,7 +79,7 @@
     },
     "com.unity.nuget.newtonsoft-json": {
       "version": "3.0.2",
-      "depth": 1,
+      "depth": 2,
       "source": "registry",
       "dependencies": {},
       "url": "https://packages.unity.com"

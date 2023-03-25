@@ -9,42 +9,63 @@ public class GameManger : MonoBehaviour
     [SerializeField] Transform EnemyUnit;
     [SerializeField] Transform LevelGridGrid;
 
-        GameObject grid;
+    GameObject grid;
+    public static bool IsGameStarted=false;
     private void Start()
     {
         DontDestroyOnLoad(gameObject);
+        if(IsGameStarted)return;
+
         ListenToClientsEvents();
         if (!GameObject.FindGameObjectWithTag("Grid"))
         {
             grid =  Instantiate(LevelGridGrid, transform).gameObject;
         }
+        IsGameStarted=true;
+
     }
 
 
     private void ListenToClientsEvents()
     {
-        Client.Instance.GetGameClient().OnSpawnUnitsOnSideOne += GameClient_SpwanUnitsOnSideOne;
-        Client.Instance.GetGameClient().OnSpawnUnitsOnSideTwo += GameClient_SpwanUnitsOnSideTwo;
+        Client.Instance.GetGameClient().OnSpawnUnitsOnSide += GameClient_SpwanUnitsOnSide;
+        Client.Instance.GetGameClient().OnPlayerStartGameMove += GameClient_OnGameMove;
 
-        Client.Instance.GetGameClient().OnActionHasBeenDone += GameClient_ActionHasBeenDone;
+        if (UnitActionSystem.Instance != null)
+        {
+            UnitActionSystem.Instance.OnActionStarted += UnitActionSystem_OnActionStarted;
+        }
     }
 
-    private void GameClient_ActionHasBeenDone(Tuple<string,Tuple<string, string>> action )
+    public void GameClient_OnGameMove(bool obj)
     {
-       
+        Debug.Log(obj);
+        if (!obj) return;
+        TurnSystem.Instance.NextTurn();
     }
 
-    private void GameClient_SpwanUnitsOnSideOne()
+    private void UnitActionSystem_OnActionStarted()
     {
-        InstantiateNormalUnitOnSideOne();
-        InstantiateEnemyUnitOnSideTwo();
+       Unit unit= UnitActionSystem.Instance.GetSelectedUnit();
+       BaseAction baseAction= UnitActionSystem.Instance.GetSelectedAction();
     }
-    private void GameClient_SpwanUnitsOnSideTwo()
-    {
-        InstantiateEnemyUnitOnSideOne();
-        InstantiateNormalUnitOnSideTwo();
-        GameObject.FindObjectOfType<CameraController>().transform.SetPositionAndRotation(new Vector3(10, 0, 20),new Quaternion(0,180,0,0));
 
+
+    #region Spawn Clients
+    private void GameClient_SpwanUnitsOnSide(int i = 0)
+    {
+        if (i == 1)
+        {
+            InstantiateNormalUnitOnSideOne();
+            InstantiateEnemyUnitOnSideTwo();
+        }
+        else if(i==2)
+        {
+            InstantiateEnemyUnitOnSideOne();
+            InstantiateNormalUnitOnSideTwo();
+            GameObject.FindObjectOfType<CameraController>().transform.SetPositionAndRotation(new Vector3(10, 0, 20), new Quaternion(0, 180, 0, 0));
+
+        }
     }
 
     private void InstantiateNormalUnitOnSideOne()
@@ -75,4 +96,5 @@ public class GameManger : MonoBehaviour
             Instantiate(EnemyUnit, LevelGrid.Instance.GetWorldPosition(new GridPosition(i, LevelGrid.Instance.GetHeight()-1)), new Quaternion(0, 180, 0, 0));
         }
     }
+    #endregion
 }

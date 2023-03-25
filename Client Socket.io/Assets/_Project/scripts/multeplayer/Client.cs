@@ -33,7 +33,7 @@ namespace TBS.NetWork
 
 
 
-        private void StartGame()
+        private void StartGame(byte a)
         {
             SceneManager.LoadScene(2);
         }

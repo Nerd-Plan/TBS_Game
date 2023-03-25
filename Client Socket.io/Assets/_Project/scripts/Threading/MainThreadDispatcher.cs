@@ -1,13 +1,13 @@
 using UnityEngine;
 using System.Collections.Generic;
-using System.Threading;
+using System;
 
 namespace TBS.Threading
 {
     public class MainThreadDispatcher : MonoBehaviour
     {
         private static MainThreadDispatcher Instance = null;
-        private static readonly Queue<System.Action> executionQueue = new Queue<System.Action>();
+        private static readonly Queue<Action> executionQueue = new Queue<Action>();
         private static readonly object queueLock = new object();
 
         private void Awake()
@@ -32,13 +32,17 @@ namespace TBS.Threading
             }
         }
 
-        public static void ExecuteOnMainThread(System.Action action)
+        public static void ExecuteOnMainThread<T>(Action<T> action, T arg)
         {
             lock (queueLock)
             {
-                executionQueue?.Enqueue(action);
+                executionQueue.Enqueue(() =>
+                {
+                    if(arg != null&&action!=null)
+                        action(arg); 
+                });
+
             }
         }
-
     }
 }

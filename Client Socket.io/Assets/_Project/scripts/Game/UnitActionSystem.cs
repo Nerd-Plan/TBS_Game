@@ -90,6 +90,7 @@ public class UnitActionSystem : MonoBehaviour
         return;
         if (!selected_unit.TrySpendActionPointsToTakeAction(selected_action)) 
         return;
+        //Send To server
         SetBusy();
         selected_action.TakeAction(mousegridposition, ClearBusy);
         OnActionStarted?.Invoke();

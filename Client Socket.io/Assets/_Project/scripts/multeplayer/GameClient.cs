@@ -7,6 +7,7 @@ using UnityEngine;
 using UnityEngine.SceneManagement;
 using TBS.NetWork;
 using System.Collections.Generic;
+using Random = System.Random;
 
 public class GameClient 
 {
@@ -21,17 +22,17 @@ public class GameClient
     public void SetIpAddress(string ip)=>ipAddress = ip;
     public void SetPort(int Port) => port = Port;
 
-    public event Action OnGameStart;
+    public event Action<byte> OnGameStart;
     Thread receivemessagethread;
     #endregion
     #region Game Prop's 
 
-    public event Action OnSpawnUnitsOnSideOne;
-    public event Action OnSpawnUnitsOnSideTwo;
-    public event Action OnSpawnLevelGrid;
-    public event Action<Tuple <string,Tuple<string, string> > > OnActionHasBeenDone;
+    public event Action<int> OnSpawnUnitsOnSide;
+    public event Action<byte> OnSpawnLevelGrid;
+    //public event Action<Tuple <string,Tuple<string, string> > > OnActionHasBeenDone;
 
-
+    public event Action<bool> OnPlayerStartGameMove;
+    Random r = new Random();
     #endregion
     #region Client only
     public void Connect()
@@ -55,6 +56,14 @@ public class GameClient
     {
         Debug.Log("Scene loaded: " + scene.name);
         SendMessage("Scene loaded: " + scene.name);
+
+        ListenToGameEvents();
+    }
+
+    private void ListenToGameEvents()
+    {
+        //send to to other and cancel the abilty to play
+        //UnitActionSystem.Instance.OnActionStarted+=
     }
 
     public void Disconnect()
@@ -109,10 +118,12 @@ public class GameClient
     }
 
     #endregion
+
     #region Game contect
+
     public void StartGame()
     {
-        MainThreadDispatcher.ExecuteOnMainThread(OnGameStart);
+        MainThreadDispatcher.ExecuteOnMainThread(OnGameStart,byte.MinValue);
     }
     #endregion
 
@@ -131,53 +142,32 @@ public class GameClient
     {
         if (servercommend.Contains("Game Has Been Started"))
         {
-            MainThreadDispatcher.ExecuteOnMainThread(OnGameStart);
-            return true ;
+            StartGame();
+            return true;
         }
         else if (servercommend.Contains("SetBoard"))
         {
-            MainThreadDispatcher.ExecuteOnMainThread(OnSpawnLevelGrid);
+            MainThreadDispatcher.ExecuteOnMainThread(OnSpawnLevelGrid, byte.MinValue);
             return true;
         }
         else if (servercommend.Contains("Instantiate Units"))
-        {
+        { 
+            int i = r.Next(0, 2);
             if (servercommend.Contains("Side One"))
             {
-                MainThreadDispatcher.ExecuteOnMainThread(OnSpawnUnitsOnSideOne);
-                return true;
+                MainThreadDispatcher.ExecuteOnMainThread(OnSpawnUnitsOnSide,1);
+                MainThreadDispatcher.ExecuteOnMainThread(OnPlayerStartGameMove, i == 0 ? true : false);
+
             }
             else
             {
-                MainThreadDispatcher.ExecuteOnMainThread(OnSpawnUnitsOnSideTwo);
-                return true;
+                MainThreadDispatcher.ExecuteOnMainThread(OnSpawnUnitsOnSide,2);
+                MainThreadDispatcher.ExecuteOnMainThread(OnPlayerStartGameMove, i == 0 ? true : false);
             }
-        }
-        else if (servercommend.Contains("First Move Is your's"))
-        {
-            //the first who start's the game 
-            //TODO: Enable Player to do actions
             return true;
         }
-            return false;
+        return false;
     }
 
-    public  Vector3 StringToVector3(string sVector)
-    {
-        // Remove the parentheses
-        if (sVector.StartsWith("(") && sVector.EndsWith(")"))
-        {
-            sVector = sVector.Substring(1, sVector.Length - 2);
-        }
-
-        // split the items
-        string[] sArray = sVector.Split(',');
-
-        // store as a Vector3
-        Vector3 result = new Vector3(
-            float.Parse(sArray[0]),
-            float.Parse(sArray[1]),
-            float.Parse(sArray[2]));
-
-        return result;
-    }
+    
 }

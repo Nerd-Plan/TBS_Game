@@ -14,7 +14,7 @@ public class GameServer
     #region Prop's
     int port;
     public void SetPort(int p) => port = p;
-    public event Action OnServerEnded;
+    public event Action<byte> OnServerEnded;
     public event Action OnServerStarted;
 
     private TcpListener listener;
@@ -44,7 +44,8 @@ public class GameServer
                 SendMessageToPlayer(0, Encoding.ASCII.GetBytes("Game Has Been Started"));
                 SendMessageToPlayer(1, Encoding.ASCII.GetBytes("Game Has Been Started"));
                 int player = Random.Range(0, 1);
-                SendMessageToPlayer(player, Encoding.ASCII.GetBytes("you starting"));
+                SendMessageToPlayer(player, Encoding.ASCII.GetBytes("First Move"));
+                SendMessageToPlayer(player==0?1:0, Encoding.ASCII.GetBytes("Not You'r Move"));
                 // player  with playerid starts
             }
         }
@@ -90,7 +91,7 @@ public class GameServer
     {
         try
         {
-            MainThreadDispatcher.ExecuteOnMainThread(OnServerEnded);
+            MainThreadDispatcher.ExecuteOnMainThread(OnServerEnded,byte.MinValue);
             // stop the listener and dispose of resources
             listener?.Stop();
 
@@ -301,8 +302,6 @@ public class GameServer
     {
         SendMessageToPlayer(1, Encoding.UTF8.GetBytes($"SetBoard"));
         SendMessageToPlayer(2, Encoding.UTF8.GetBytes($"SetBoard"));
-
-
         SendMessageToPlayer(1,Encoding.UTF8.GetBytes($"Instantiate Units On Side One"));  
         SendMessageToPlayer(2,Encoding.UTF8.GetBytes("Instantiate Units On Side Two"));
 
