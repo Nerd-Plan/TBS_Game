@@ -86,7 +86,7 @@ public class Unit : MonoBehaviour
 
     public bool CanSpendActionPointsToTakeAction(BaseAction baseAction) => (actionpoints >= baseAction.GetActionPointsCost());
 
-    private void SpendActionPoints(int amount)
+    public void SpendActionPoints(int amount)
     {
         actionpoints -= amount;
         OnAnyActionPointsChanged?.Invoke(); 

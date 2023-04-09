@@ -1,12 +1,13 @@
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Net.Sockets;
 using System.Text;
 using System.Threading;
+using System.Threading.Tasks;
 using TBS.Threading;
 using UnityEngine;
 using UnityEngine.SceneManagement;
-using TBS.NetWork;
-using System.Collections.Generic;
 using Random = System.Random;
 
 public class GameClient 
@@ -23,17 +24,20 @@ public class GameClient
     public void SetPort(int Port) => port = Port;
 
     public event Action<byte> OnGameStart;
+    public event Action<byte> OnSwitchTurns;
     Thread receivemessagethread;
     #endregion
+
     #region Game Prop's 
 
     public event Action<int> OnSpawnUnitsOnSide;
     public event Action<byte> OnSpawnLevelGrid;
-    //public event Action<Tuple <string,Tuple<string, string> > > OnActionHasBeenDone;
+    public event Action<string>OnUnitDoAction;
 
     public event Action<bool> OnPlayerStartGameMove;
     Random r = new Random();
     #endregion
+
     #region Client only
     public void Connect()
     {
@@ -52,19 +56,6 @@ public class GameClient
         }
     }
 
-    private void OnSceneLoaded(Scene scene, LoadSceneMode mode)
-    {
-        Debug.Log("Scene loaded: " + scene.name);
-        SendMessage("Scene loaded: " + scene.name);
-
-        ListenToGameEvents();
-    }
-
-    private void ListenToGameEvents()
-    {
-        //send to to other and cancel the abilty to play
-        //UnitActionSystem.Instance.OnActionStarted+=
-    }
 
     public void Disconnect()
     {
@@ -121,28 +112,66 @@ public class GameClient
 
     #region Game contect
 
-    public void StartGame()
+    private void OnSceneLoaded(Scene scene, LoadSceneMode mode)
     {
-        MainThreadDispatcher.ExecuteOnMainThread(OnGameStart,byte.MinValue);
+        Debug.Log("Scene loaded: " + scene.name);
+        SendMessage("Scene loaded: " + scene.name);
+
+        ListenToGameEvents();
+
+    }
+
+    private void ListenToGameEvents()
+    {
+        //send to to other and cancel the abilty to play
+        BaseAction.OnAnyActionStarted += Action_ActionStarted;
+        TurnSystem.OnTurnSwitched += OnTurnChanged;
+    }
+
+
+    private void OnTurnChanged()
+    {
+        if (TurnSystem.Instance.IsPlayerTurn()) { return; }
+        SendMessage("Switch Turns");
+    }
+
+    private void Action_ActionStarted(object sender, EventArgs e)
+    {
+        if (UnitManager.Instance.GetEnemyUnitList().Contains(((BaseAction)sender).GetUnit()))
+            return;
+        SendMessage(((BaseAction)sender).GetActionAsString());
     }
     #endregion
 
     private void DoAsTheServerCommends(string servercommend)
     {
-        if (StartBoardCommands(servercommend)) { return; }
+        if (StartBoardCommands(servercommend)){return;}
         if (GameActionsCommands(servercommend)){return;}
+        if(GameSwitchTurnsCommands(servercommend)){return;}
+    }
+
+    private bool GameSwitchTurnsCommands(string servercommend)
+    {
+        if (!servercommend.Contains("Switch"))
+            return false;
+        MainThreadDispatcher.ExecuteOnMainThread(OnSwitchTurns, byte.MinValue);
+        return true;
     }
 
     private bool GameActionsCommands(string servercommend)
     {
+        if (!servercommend.Contains("Action"))
+        return false;
+        MainThreadDispatcher.ExecuteOnMainThread(OnUnitDoAction, servercommend);
         return true;
+        
     }
 
     private bool StartBoardCommands(string servercommend)
     {
         if (servercommend.Contains("Game Has Been Started"))
         {
-            StartGame();
+            MainThreadDispatcher.ExecuteOnMainThread(OnGameStart, byte.MinValue);
             return true;
         }
         else if (servercommend.Contains("SetBoard"))
@@ -152,18 +181,24 @@ public class GameClient
         }
         else if (servercommend.Contains("Instantiate Units"))
         { 
-            int i = r.Next(0, 2);
             if (servercommend.Contains("Side One"))
             {
                 MainThreadDispatcher.ExecuteOnMainThread(OnSpawnUnitsOnSide,1);
-                MainThreadDispatcher.ExecuteOnMainThread(OnPlayerStartGameMove, i == 0 ? true : false);
-
             }
             else
             {
                 MainThreadDispatcher.ExecuteOnMainThread(OnSpawnUnitsOnSide,2);
-                MainThreadDispatcher.ExecuteOnMainThread(OnPlayerStartGameMove, i == 0 ? true : false);
             }
+            return true;
+        }
+        else if(servercommend.Contains("First Move"))
+        {
+            MainThreadDispatcher.ExecuteOnMainThread(OnPlayerStartGameMove, true);
+            return true;
+        }
+        else if(servercommend.Contains("Not You'r Move"))
+        {
+            MainThreadDispatcher.ExecuteOnMainThread(OnPlayerStartGameMove, false);
             return true;
         }
         return false;

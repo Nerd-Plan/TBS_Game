@@ -8,6 +8,9 @@ public class MoveAction : BaseAction
     [SerializeField] int max_move_distance;
 
     private Vector3 targetPosition;
+    public Vector3 GetTargetPosition()=>targetPosition;
+    public Vector3 SetTargetPosition(Vector3 t) => targetPosition=t;
+
     float stoppingDistance = .1f;
     float moveSpeed = 4f;
     float rotationspeed = 8;
@@ -66,7 +69,13 @@ public class MoveAction : BaseAction
         isActive = true;
         ActionStart(onActionComplete);
     }
-
+    public override void TakeAction(Action OnActionComplete)
+    {
+        OnStartMoving?.Invoke();
+        onActionComplete = OnActionComplete;
+        isActive = true;
+        ActionStart(onActionComplete);
+    }
     public override EnemyAIAction GetEnemyAIAction(GridPosition gridPosition)
     {
         int targetCountAtGridPosition = unit.GetAction<ShootAction>().GetTargetCountAtPosition(gridPosition);
@@ -77,6 +86,10 @@ public class MoveAction : BaseAction
             actionValue = targetCountAtGridPosition * 10,
         };
     }
+    public override string GetActionAsString() => $"Move Action , Unit : {GetUnit().name}, Position {GetTargetPosition()} key123";
 
-
+    public override void SetTarget(GridPosition gridPosition)
+    {
+        targetPosition= LevelGrid.Instance.GetWorldPosition(gridPosition);
+    }
 }

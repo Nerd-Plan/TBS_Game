@@ -687,7 +687,7 @@ MonoBehaviour:
   client: {fileID: 0}
   game_manger: {fileID: 0}
   ip: localhost
-  port: 25001
+  port: 12345
 --- !u!1 &700266139
 GameObject:
   m_ObjectHideFlags: 0

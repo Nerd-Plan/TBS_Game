@@ -35,9 +35,12 @@ public class UnitActionSystem : MonoBehaviour
     }
     private void Start()
     {
-        if(selected_unit)
+        if (selected_unit)
         SetSelectedAction(selected_unit.GetAction<MoveAction>());
     }
+
+
+
     private void Update()
     {
        if (isBusy) return;
@@ -64,9 +67,8 @@ public class UnitActionSystem : MonoBehaviour
         return false; 
     }
 
-    private void SetSelectedUnit(Unit unit)
+    public void SetSelectedUnit(Unit unit)
     {
-        if (unit == null) return;
         selected_unit = unit;
         SetSelectedAction(selected_unit.GetAction<MoveAction>());
         OnSelectedUnitChanged?.Invoke();

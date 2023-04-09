@@ -8,11 +8,11 @@ public class TurnSystem : MonoBehaviour
     public static TurnSystem Instance { get; private set; }
 
     public event Action OnTurnChanged;
-
+    public static event Action OnTurnSwitched;
 
     private int turnNumber = 1;
 
-    bool is_player_turn=true;
+     bool is_player_turn=true;
     private void Awake()
     {
         if (Instance != null)
@@ -31,6 +31,13 @@ public class TurnSystem : MonoBehaviour
         turnNumber++;
         is_player_turn = !is_player_turn;
         OnTurnChanged?.Invoke();
+        OnTurnSwitched?.Invoke();
+    }
+    public void SetEnemyTurn()
+    {
+        is_player_turn = !is_player_turn;
+        OnTurnChanged?.Invoke();
+        //OnTurnSwitched?.Invoke();
     }
 
     public int GetTurnNumber()=> turnNumber;

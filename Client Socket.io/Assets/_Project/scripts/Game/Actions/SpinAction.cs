@@ -29,6 +29,13 @@ public class SpinAction : BaseAction
         totalspintamount = 0;
         ActionStart(onActionComplete);
     }
+    public override void TakeAction(Action OnActionComplete)
+    {
+        onActionComplete = OnActionComplete;
+        isActive = true;
+        totalspintamount = 0;
+        ActionStart(onActionComplete);
+    }
     public override EnemyAIAction GetEnemyAIAction(GridPosition gridPosition)=> new EnemyAIAction{gridPosition = gridPosition,actionValue = 0,};
     
 
@@ -38,5 +45,12 @@ public class SpinAction : BaseAction
     {
         GridPosition unitgridposition = unit.GetGridPosition();
         return new List<GridPosition>(){unit.GetGridPosition()};
+    }
+
+    public override string GetActionAsString()=> $"Spin Action , Unit : {GetUnit().name}, Position {GetUnit().GetWorldPosition()} key123";
+
+    public override void SetTarget(GridPosition gridPosition)
+    {
+        return;
     }
 }

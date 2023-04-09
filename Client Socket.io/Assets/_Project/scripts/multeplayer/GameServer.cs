@@ -4,10 +4,9 @@ using System.Net.Sockets;
 using System.Text;
 using System.Threading;
 using UnityEngine;
-using Random = UnityEngine.Random;
+using Random = System.Random;
 using TBS.Threading;
 using System.Collections.Generic;
-using System.Windows.Input;
 
 public class GameServer 
 {
@@ -43,19 +42,27 @@ public class GameServer
             {
                 SendMessageToPlayer(0, Encoding.ASCII.GetBytes("Game Has Been Started"));
                 SendMessageToPlayer(1, Encoding.ASCII.GetBytes("Game Has Been Started"));
-                int player = Random.Range(0, 1);
-                SendMessageToPlayer(player, Encoding.ASCII.GetBytes("First Move"));
-                SendMessageToPlayer(player==0?1:0, Encoding.ASCII.GetBytes("Not You'r Move"));
+                RandomPlayerStart();
                 // player  with playerid starts
             }
         }
     }
+
+    private void RandomPlayerStart()
+    {
+        Random random = new Random();
+        int odds = random.Next(0, 101);
+        int player = odds >= 50 ? 0 : 1;
+        Debug.Log(player);
+        SendMessageToPlayer(player, Encoding.ASCII.GetBytes("First Move"));
+        SendMessageToPlayer(player == 0 ? 1 : 0, Encoding.ASCII.GetBytes("Not You'r Move"));
+    }
     #endregion
     #region GameProp's
     LevelGrid current_LevelGrid;
+
+    Dictionary<int,Tuple<int,string>> moves_history=new Dictionary<int,Tuple<int,string>>();
     #endregion
-
-
 
     #region Start and Stop Server 
     public GameServer()
@@ -73,14 +80,15 @@ public class GameServer
 
     public void StartServer()
     {
-        Ready = 0;
         try
         {          
+            
             listener = new TcpListener(IPAddress.Any, port);
             listener.Start();
             listenerThread = new Thread(new ThreadStart(ListenForClients));
             listenerThread.Start();
             Debug.Log("Server started and listening on port " + port);
+            Ready = 0;
         }
         catch (Exception e)
         {
@@ -113,141 +121,115 @@ public class GameServer
     }
     #endregion
 
-
     #region Server Client Communiction
 
     private void ListenForClients()
     {
         try
         {
-            // accept the first client connection
-            client1 = listener.AcceptTcpClient();
-            Debug.Log("Player 1 connected.");
-
-            // get the network stream for the client connection 
-            clientStream1 = client1.GetStream();
-
-            // start a new thread to handle communication with the first client
-            clientThread1 = new Thread(new ParameterizedThreadStart(HandleClientComm));
-            clientThread1.Start(1);
-
-            // accept the second client connection
-            client2 = listener.AcceptTcpClient();
-            Debug.Log("Player 2 connected.");
-
-            // get the network stream for the client connection 
-            clientStream2 = client2.GetStream();
-
-            // start a new thread to handle communication with the second client
-            clientThread2 = new Thread(new ParameterizedThreadStart(HandleClientComm));
-            clientThread2.Start(2);
+            ListenForClient(1);
+            ListenForClient(2);
         }
         catch (Exception e)
         {
             Debug.Log("Error accepting client connection: " + e.Message);
         }
     }
-
     private void ListenForClient()
     {
+        if(client1.Connected)
+        {
+            ListenForClient(2);
+        }
+        else
+        {
+            ListenForClient(1);
+        }
+
+    }
+    private void ListenForClient(int player)
+    {
         try
         {
-            if (!client1.Connected)
+            TcpClient client = listener.AcceptTcpClient();
+            client.ReceiveBufferSize = 1024;
+            Debug.Log($"Player {player} connected.");
+
+            NetworkStream stream = client.GetStream();
+            if(player == 1)
             {
-                // accept the first client connection
-                client1 = listener.AcceptTcpClient();
-                Debug.Log("Player 1 connected.");
-
-                // get the network stream for the client connection 
-                clientStream1 = client1.GetStream();
-
-                // start a new thread to handle communication with the first client
-                clientThread1 = new Thread(new ParameterizedThreadStart(HandleClientComm));
-                clientThread1.Start(1);
+                client1 = client;
+                clientStream1 = stream;
             }
-            else if (!client2.Connected)
+            else
             {
-                // accept the second client connection
-                client2 = listener.AcceptTcpClient();
-                Debug.Log("Player 2 connected.");
-
-                // get the network stream for the client connection 
-                clientStream2 = client2.GetStream();
-
-                // start a new thread to handle communication with the second client
-                clientThread2 = new Thread(new ParameterizedThreadStart(HandleClientComm));
-                clientThread2.Start(2);
+                client2= client;
+                clientStream2 = stream;
             }
+            Thread thread = new Thread(() => HandleClientComm(player,stream,client));
+            thread.Start();
         }
         catch (Exception e)
         {
             Debug.Log("Error accepting client connection: " + e.Message);
         }
     }
-
-
-    private void HandleClientComm(object playerObj)
+    private void HandleClientComm(int player, NetworkStream stream, TcpClient client)
     {
-        int player = (int)playerObj;
-        NetworkStream stream = (player == 1 ? clientStream1 : clientStream2);
-        Thread playerthread = (player == 1 ? clientThread1 : clientThread2);
         try
         {
-            // send a welcome message to the client
-            SendMessageToPlayer(player, Encoding.ASCII.GetBytes($"Hello Player {player} welcome to the server"));
-            while (true)
+            SendMessageToPlayer(player, Encoding.ASCII.GetBytes($"Hello Player {player}, welcome to the server"));
+            bool shouldListen=true;
+            while (shouldListen)
             {
                 // read data from the client
-                byte[] data = new byte[client1.ReceiveBufferSize];
+                byte[] data = new byte[client.ReceiveBufferSize];
                 int bytesRead = stream.Read(data, 0, data.Length);
-                if (bytesRead > 0)
+                if (bytesRead <= 0)
                 {
-                    string message = Encoding.ASCII.GetString(data);
-                    Debug.Log("Player " + player + " sent: " + message);
-                    if (message.Contains("Log Out"))
-                    {
-                        DisconnectPlayer(player);
-                        return;
-                    }
-                    HandleMessagesFromClient(message);
-                    //if (client2 != null)                                //TODO: send to 2 players if we have 2 and we are in the game state
-                    //    SendMessageToPlayer(player, data);
-                }
-                else
-                {
-                    if (playerthread != null) return;
-                    // the client has disconnected, so exit the loop
                     Debug.Log("Player " + player + " disconnected.");
                     DisconnectPlayer(player);
+                    shouldListen = false;
                     return;
                 }
+
+                string message = Encoding.ASCII.GetString(data, 0, bytesRead);
+                Debug.Log("Player " + player + " sent: " + message);
+                if (message.Contains("Log Out"))
+                {
+                    Debug.Log("Player " + player + " disconnected.");
+                    DisconnectPlayer(player);
+                    shouldListen = false;
+                    return;
+                }
+                HandleMessagesFromClient(player,message);
             }
         }
         catch (Exception e)
         {
-            if (!(player == 1 ? client1 : client2).Connected)
-                DisconnectPlayer(player);
-            Debug.Log("Error handling client communication: " + e.Message);
+            if (!client.Connected)
+                client.Close();           
+            Debug.Log("Error handling client communication: " + e.Message);            
         }
     }
-
     private void DisconnectPlayer(int player)
     {
         if (player == 1)
         {
             client1.Close();
+            listener.Stop();
             listenerThread = new Thread(new ThreadStart(ListenForClient));
             listenerThread.Start();
         }
         else
         {
             client2.Close();
+            listener.Stop();
             listenerThread = new Thread(new ThreadStart(ListenForClient));
             listenerThread.Start();
         }
         Debug.Log($"player {player} Disconnected ");
     }
-
     private void SendMessageToPlayer(int player, byte[] data)
     {
         NetworkStream Stream = (player == 1 ? clientStream1 : clientStream2);
@@ -260,38 +242,40 @@ public class GameServer
     #region Handle Client messages
 
     //other class
-    private void HandleMessagesFromClient(string message)
+    private void HandleMessagesFromClient(int player,string message)
     {
         if (Ready != 2)
         {
-            HandleStartGameMessage(message);
+           HandleStartGameMessage(message);
         }
-        HandleGameMessage(message);
+       if(HandleGameMessage(player, message)) { return; }
+       if(HandleSwitchTurnsMessage(player, message)) { return; }
 
         //Brodcast
     }
-
+    private bool HandleSwitchTurnsMessage(int player,string message)
+    {
+        if(!message.Contains("Switch Turns"))
+            return false;
+        SendMessageToPlayer(player == 1 ? 2 : 1, Encoding.UTF8.GetBytes(message));
+        return true;
+    }
     private void HandleStartGameMessage(string message)
     {
         if (message.Contains("Ready"))
             Ready++;
         else if (message.Contains("Cancel"))
             Ready--;
-
     }
-
-    private bool HandleGameMessage(string message)
+    private bool HandleGameMessage(int player, string message)
     {
-        if (message.Contains("Move"))
-        {
-            return true;
-        }
-        else if (message.Contains("Attack"))
-        {
-            return true;
-        }
-
-        return false;
+        if (!message.Contains("Action"))
+            return false;
+        if (!message.Contains("key123"))
+            return false;
+        message = message.Replace("key123", "");
+        SendMessageToPlayer(player == 1 ? 2 : 1, Encoding.ASCII.GetBytes(message));
+        return true;
     }
 
     #endregion

@@ -17,6 +17,9 @@ public class ShootAction : BaseAction
     private int maxShootDistance = 7;
     private float stateTimer;
     private Unit targetUnit;
+    public void SetTargetUnit(Unit t)=>targetUnit = t;
+    public override void SetTarget(GridPosition t) => targetUnit = LevelGrid.Instance.GetUnitAtGridPosition(t);
+
     private bool canShootBullet;
 
     public Action<Vector3> OnShoot;
@@ -126,6 +129,14 @@ public class ShootAction : BaseAction
         canShootBullet = true;
         ActionStart(onActionComplete);
     }
+    public override void TakeAction(Action onActionComplete)
+    {
+        state = State.Aiming;
+        float aimingStateTime = 1f;
+        stateTimer = aimingStateTime;
+        canShootBullet = true;
+        ActionStart(onActionComplete);
+    }
 
     public Unit GetTargetUnit()=> targetUnit;
 
@@ -146,6 +157,7 @@ public class ShootAction : BaseAction
         return GetValidActionGridPositionList(gridPosition).Count;
     }
 
+    public override string GetActionAsString() => $"Shoot Action , Unit : {GetUnit().name}, Position {GetTargetUnit().GetWorldPosition()} key123";
 
 
 }

@@ -13,13 +13,14 @@ public abstract class BaseAction : MonoBehaviour
     public static event EventHandler OnAnyActionCompleted;
 
 
-
     protected virtual void Awake()
     {
         unit = transform.GetComponent<Unit>();
     }
     public abstract string GetActionName();
+    public abstract void SetTarget(GridPosition gridPosition);
     public abstract void TakeAction(GridPosition gridPosition, Action OnActionComplete);
+    public abstract void TakeAction(Action OnActionComplete);
     public virtual bool IsValidAtGridPosition(GridPosition gridPosition)=> GetValidGridPositionList().Contains(gridPosition);
 
     public abstract List<GridPosition> GetValidGridPositionList();
@@ -65,5 +66,5 @@ public abstract class BaseAction : MonoBehaviour
     }
 
     public abstract EnemyAIAction GetEnemyAIAction(GridPosition gridPosition);
-
+    public abstract string GetActionAsString();
 }
