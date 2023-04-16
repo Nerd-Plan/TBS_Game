@@ -13,11 +13,13 @@ namespace TBS.NetWork
 
         private void OnDestroy()
         {
-            gameClient.Disconnect();
+            gameClient.Stop();
+            gameClient.Dispose();
         }
         private void OnApplicationQuit()
         {
-            gameClient.Disconnect();
+            gameClient.Stop();
+            gameClient.Dispose();
         }
         public void ConnectToServer(string ip,int port)
         {

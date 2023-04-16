@@ -10,17 +10,17 @@ using UnityEngine;
 using UnityEngine.SceneManagement;
 using Random = System.Random;
 
-public class GameClient 
+public class GameClient:IDisposable
 {
     #region Prop's
 
-    private TcpClient client;
-    private NetworkStream stream;
+    private  TcpClient client;
+    private  NetworkStream stream;
     private byte[] buffer = new byte[1024];
     string ipAddress;
     int port;
 
-    public void SetIpAddress(string ip)=>ipAddress = ip;
+    public void SetIpAddress(string ip) => ipAddress = ip;
     public void SetPort(int Port) => port = Port;
 
     public event Action<byte> OnGameStart;
@@ -32,10 +32,9 @@ public class GameClient
 
     public event Action<int> OnSpawnUnitsOnSide;
     public event Action<byte> OnSpawnLevelGrid;
-    public event Action<string>OnUnitDoAction;
+    public event Action<string> OnUnitDoAction;
 
     public event Action<bool> OnPlayerStartGameMove;
-    Random r = new Random();
     #endregion
 
     #region Client only
@@ -48,6 +47,7 @@ public class GameClient
             receivemessagethread = new Thread(new ThreadStart(ReceiveMessage));
             receivemessagethread.Start();
             SceneManager.sceneLoaded += OnSceneLoaded;
+            Debug.Log("Client Connects to server");
         }
         catch (Exception e)
         {
@@ -56,34 +56,58 @@ public class GameClient
         }
     }
 
-
+    public void Stop()
+    {
+        Disconnect();
+    }
+    
     public void Disconnect()
     {
+        
         try
-        {
-            if (client.Connected)
-                SendMessage("Log Out");
-            stream.Dispose();
-            client.Dispose();
+        {           
+           if (client.Connected)
+               SendMessage("Log Out");
+           client?.Close();
+           stream?.Close();
+           receivemessagethread?.Abort();
+           Debug.Log("Disconnected from server.");           
         }
         catch (Exception e)
         {
             Debug.Log("Error disconnecting from server: " + e.Message);
         }
-        Debug.Log("Disconnected from server.");
     }
 
     public void SendMessage(string message)
     {
-        try
+
+        if (client.Connected)
         {
-            stream.Write(Encoding.ASCII.GetBytes(message), 0, message.Length);
+            try
+            {
+                // Get NetworkStream if TcpClient is connected
+                NetworkStream stream = client.GetStream();
+                if (stream != null && stream.CanWrite)
+                {
+                    byte[] data = Encoding.UTF8.GetBytes(message);
+                    // Write data to NetworkStream
+                    stream.Write(data, 0, data.Length);
+                }
+            }
+            catch (ObjectDisposedException ex)
+            {
+                // Handle exception, e.g. log or display error message
+                Debug.Log("Error sending data: " + ex.Message);
+            }
         }
-        catch (Exception e)
+        else
         {
-            Debug.Log("Error sending message: " + e.Message);
+            // Handle error, e.g. client is null or not connected
+            Debug.Log("Error sending data: client is not connected");
         }
     }
+
 
     public void ReceiveMessage()
     {
@@ -114,11 +138,8 @@ public class GameClient
 
     private void OnSceneLoaded(Scene scene, LoadSceneMode mode)
     {
-        Debug.Log("Scene loaded: " + scene.name);
         SendMessage("Scene loaded: " + scene.name);
-
         ListenToGameEvents();
-
     }
 
     private void ListenToGameEvents()
@@ -204,5 +225,8 @@ public class GameClient
         return false;
     }
 
-    
+    public void Dispose()
+    {
+        Stop();
+    }
 }

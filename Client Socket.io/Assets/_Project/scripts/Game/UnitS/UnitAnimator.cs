@@ -22,8 +22,14 @@ public class UnitAnimator : MonoBehaviour
         {
             shootAction.OnShoot += ShootAction_OnShoot;
         }
+        if (TryGetComponent<IceSwordsAction>(out IceSwordsAction iceSwordsAction))
+        {
+            iceSwordsAction.OnCastAbility += iceSwordsAction_OnCastAbility;
+        }
     }
 
+    private void iceSwordsAction_OnCastAbility()=>animator.SetTrigger("IceSowrdsCast");
+    
     private void MoveAction_OnStartMoving()=>animator.SetBool("IsWalking", true);
     private void MoveAction_OnStopMoving()=>animator.SetBool("IsWalking", false);
     

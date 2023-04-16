@@ -21,7 +21,7 @@ public class Health : MonoBehaviour
         health_points = Mathf.Max(health_points - damge_points,0);
         Debug.Log("HP: " + health_points);
         OnDamaged?.Invoke();
-        if (health_points == 0)
+        if (health_points <= 0)
         {
             Die();
         }    

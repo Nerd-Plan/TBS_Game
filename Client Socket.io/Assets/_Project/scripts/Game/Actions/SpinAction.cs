@@ -24,10 +24,7 @@ public class SpinAction : BaseAction
     }
     public override void TakeAction(GridPosition gridPosition,Action OnActionComplete)
     {
-        onActionComplete = OnActionComplete;
-        isActive = true;
-        totalspintamount = 0;
-        ActionStart(onActionComplete);
+        TakeAction(OnActionComplete);
     }
     public override void TakeAction(Action OnActionComplete)
     {

@@ -43,7 +43,9 @@ public class CameraManger : MonoBehaviour
                 ShootCamreaGameObject.transform.LookAt(targetUnit.GetWorldPosition() + cameraCharacterHeight);
                 ShowShootCamrea();
                 break;
+           
         }
+
     }
 
     private void BaseAction_OnAnyActionCompleted(object sender, EventArgs e)
@@ -53,6 +55,7 @@ public class CameraManger : MonoBehaviour
             case ShootAction shootAction:
                 HideShootCamera();
                 break;
+            
         }
     }
 

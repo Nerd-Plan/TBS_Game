@@ -28,6 +28,7 @@ public class GridSystemVisual : MonoBehaviour
         Red,
         RedSoft,
         Yellow,
+        StrongBlue
     }
     [SerializeField] private List<GridVisualTypeMaterial> gridVisualTypeMaterialList;
 
@@ -120,10 +121,8 @@ public class GridSystemVisual : MonoBehaviour
     }
 
     private void UpdateGridVisual()
-    {
-        
+    {       
             HideAllGridPosition();
-
         if (UnitActionSystem.Instance.GetSelectedUnit() == null)
             return;
         Unit selectedUnit = UnitActionSystem.Instance.GetSelectedUnit();
@@ -142,8 +141,18 @@ public class GridSystemVisual : MonoBehaviour
                 break;
             case ShootAction shootAction:
                 gridVisualType = GridVisualType.Red;
-
                 ShowGridPositionRange(selectedUnit.GetGridPosition(), shootAction.GetMaxShootDistance(), GridVisualType.RedSoft);
+                break;
+            case SwordAction swordAction:
+                gridVisualType = GridVisualType.Red;
+                ShowGridPositionRange(selectedUnit.GetGridPosition(), swordAction.GetMaxSwordDistance(), GridVisualType.RedSoft);
+
+                break;
+            case IceSwordsAction
+            
+            iceSwords:
+                gridVisualType = GridVisualType.StrongBlue;
+                //ShowGridPositionRange(selectedUnit.GetGridPosition(), iceSwords.GetMaxThrowDistance(), GridVisualType.Blue);
                 break;
         }
         ShowGridPositionList(selectedAction.GetValidGridPositionList(), gridVisualType);

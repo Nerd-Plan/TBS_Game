@@ -5,6 +5,7 @@ using UnityEngine;
 
 public class ShootAction : BaseAction
 {
+    private static object lockObject = new object(); // Object used for locking
 
     private enum State
     {
@@ -18,7 +19,11 @@ public class ShootAction : BaseAction
     private float stateTimer;
     private Unit targetUnit;
     public void SetTargetUnit(Unit t)=>targetUnit = t;
-    public override void SetTarget(GridPosition t) => targetUnit = LevelGrid.Instance.GetUnitAtGridPosition(t);
+    public override void SetTarget(GridPosition gridPosition) 
+    {
+        targetUnit = LevelGrid.Instance.GetUnitAtGridPosition(gridPosition);
+
+    }
 
     private bool canShootBullet;
 
@@ -122,12 +127,8 @@ public class ShootAction : BaseAction
 
     public override void TakeAction(GridPosition gridPosition, Action onActionComplete)
     {
-        targetUnit = LevelGrid.Instance.GetUnitAtGridPosition(gridPosition);
-        state = State.Aiming;
-        float aimingStateTime = 1f;
-        stateTimer = aimingStateTime;
-        canShootBullet = true;
-        ActionStart(onActionComplete);
+            SetTarget(gridPosition); 
+            TakeAction(onActionComplete);
     }
     public override void TakeAction(Action onActionComplete)
     {
@@ -158,7 +159,6 @@ public class ShootAction : BaseAction
     }
 
     public override string GetActionAsString() => $"Shoot Action , Unit : {GetUnit().name}, Position {GetTargetUnit().GetWorldPosition()} key123";
-
 
 }
 

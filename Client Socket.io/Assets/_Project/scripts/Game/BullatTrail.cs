@@ -25,6 +25,7 @@ public class BullatTrail : MonoBehaviour
             transform.parent = null;
             Destroy(gameObject);
             Instantiate(bulletHitVfxPrefab, targetposition, Quaternion.identity);
+
         }
 
     }

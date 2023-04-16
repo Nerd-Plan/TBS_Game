@@ -31,17 +31,16 @@ namespace TBS.NetWork
             gameServer = new GameServer();
             GameServer.Instance.SetPort(port);
             GameServer.Instance.StartServer();
-
         }
 
         private void OnApplicationQuit()
         {
-            GameServer.Instance.Stop();
+            GameServer.Instance.Stop();    
+            
         }
         private void OnDestroy()
         {
             GameServer.Instance.Stop();
-
         }
     }
 }

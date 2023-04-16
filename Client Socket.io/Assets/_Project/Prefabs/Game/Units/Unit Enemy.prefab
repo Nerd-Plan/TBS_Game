@@ -675,6 +675,9 @@ GameObject:
   - component: {fileID: 6848580664414113851}
   - component: {fileID: 9040082390618380193}
   - component: {fileID: 8832363374499151059}
+  - component: {fileID: 1850528873721809472}
+  - component: {fileID: -8488087575414712387}
+  - component: {fileID: 8368258759272135145}
   m_Layer: 15
   m_Name: Unit Enemy
   m_TagString: Untagged
@@ -765,7 +768,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 024a0fc8e3571a249b132e7937071da4, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  animator: {fileID: 7829168327230750089}
+  animator: {fileID: 8368258759272135145}
   BullatPrefab: {fileID: 1822839446635802252, guid: 37c8f39051f0d004ea94c3cbdf8811d4, type: 3}
   BullatParent: {fileID: 198550690647337464}
 --- !u!114 &6848580664414113851
@@ -808,6 +811,54 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   ragdollPrefab: {fileID: 4843901625092423194, guid: 80a0da162c97d0142b9dcccab0aa1ec5, type: 3}
   originalRootBone: {fileID: 7918210081740507275}
+--- !u!114 &1850528873721809472
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4913346987062131192}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 89194429fdee6ce40bd892db1322a36b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  sword: {fileID: 0}
+--- !u!114 &-8488087575414712387
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4913346987062131192}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d1a3655dd0820a44fa0249787fc30898, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  iceSwords: {fileID: 400004, guid: d360dff7b53ebdb4ea755ac0639b394d, type: 3}
+  defaultweapon: {fileID: 4018666509687249728}
+  MaxThrowDistance: 3
+--- !u!95 &8368258759272135145
+Animator:
+  serializedVersion: 4
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4913346987062131192}
+  m_Enabled: 1
+  m_Avatar: {fileID: 9000000, guid: b5f71c859f9f9bf41badda8a4650082c, type: 3}
+  m_Controller: {fileID: 9100000, guid: 2dddee91b432ee4428a566a363e30cd0, type: 2}
+  m_CullingMode: 1
+  m_UpdateMode: 0
+  m_ApplyRootMotion: 0
+  m_LinearVelocityBlending: 0
+  m_StabilizeFeet: 0
+  m_WarningMessage: 
+  m_HasTransformHierarchy: 1
+  m_AllowConstantClipSamplingOptimization: 1
+  m_KeepAnimatorControllerStateOnDisable: 0
 --- !u!1 &5637654767234684199
 GameObject:
   m_ObjectHideFlags: 0
@@ -2153,7 +2204,6 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 7918103229225770129}
-  - component: {fileID: 7829168327230750089}
   m_Layer: 15
   m_Name: Character_Dummy_Male_01
   m_TagString: Untagged
@@ -2183,26 +2233,6 @@ Transform:
   m_Father: {fileID: 7588435119932333924}
   m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!95 &7829168327230750089
-Animator:
-  serializedVersion: 4
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 7923567908094267973}
-  m_Enabled: 1
-  m_Avatar: {fileID: 9000000, guid: b5f71c859f9f9bf41badda8a4650082c, type: 3}
-  m_Controller: {fileID: 9100000, guid: 2dddee91b432ee4428a566a363e30cd0, type: 2}
-  m_CullingMode: 1
-  m_UpdateMode: 0
-  m_ApplyRootMotion: 0
-  m_LinearVelocityBlending: 0
-  m_StabilizeFeet: 0
-  m_WarningMessage: 
-  m_HasTransformHierarchy: 1
-  m_AllowConstantClipSamplingOptimization: 1
-  m_KeepAnimatorControllerStateOnDisable: 0
 --- !u!1 &7923573993616620551
 GameObject:
   m_ObjectHideFlags: 0

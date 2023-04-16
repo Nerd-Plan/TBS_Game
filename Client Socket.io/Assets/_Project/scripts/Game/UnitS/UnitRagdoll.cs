@@ -16,7 +16,7 @@ public class UnitRagdoll : MonoBehaviour
     {
         MatchAllChildTransforms(originalRootBone, ragdollRootBone);
 
-        ApplyExplosionToRagdoll(ragdollRootBone, 750f, transform.position, 10f);
+        ApplyExplosionToRagdoll(ragdollRootBone, 1000f, transform.position, 10f);
     }
 
     private void MatchAllChildTransforms(Transform root, Transform clone)

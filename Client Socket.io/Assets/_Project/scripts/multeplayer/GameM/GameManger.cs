@@ -34,7 +34,15 @@ public class GameManger : MonoBehaviour
         IsGameStarted=true;
 
     }
+    private void OnDestroy()
+    {
+        IsGameStarted = false;
 
+    }
+    private void OnApplicationQuit()
+    {
+        IsGameStarted = false;
+    }
 
     private void ListenToClientsEvents()
     {
@@ -65,20 +73,13 @@ public class GameManger : MonoBehaviour
 
         Debug.Log($"Action Name : {action_name} , Unit at Grid Postion {unitgridposition} ,target Position {targetPosition}");
         Unit unit = UnitManager.Instance.GetUnitList().Find(u => u.name.Contains(unitString));
-        while(unit == null)
-        {
-            unit = UnitManager.Instance.GetUnitList().Find(u => u.name.Contains(unitString));
-        }
-
+        if (action_name.Trim().Replace(" ", "") == string.Empty)
+            return;
         Type componentType = Type.GetType(action_name.Trim().Replace(" ",""));
         Component component = unit.GetComponent(componentType);
         BaseAction action = component as BaseAction;
-        action.SetTarget(targetPosition);
-        action.TakeAction(UnitActionSystem.Instance.ClearBusy);
+        action.TakeAction(targetPosition,UnitActionSystem.Instance.ClearBusy);
         unit.TrySpendActionPointsToTakeAction(action);
-
-
-
     }
     string GetUnitNameFromString(string str)
     {
@@ -109,7 +110,7 @@ public class GameManger : MonoBehaviour
         string[] components = str.Split(',');
         if (components.Length == 3 && float.TryParse(components[0], out float x) && float.TryParse(components[1], out float y) && float.TryParse(components[2], out float z))
         {
-            return new Vector3Int((int)x, (int)y, (int)z);
+            return new Vector3Int((int)Math.Round(x), (int)Math.Round(y), (int)Math.Round(z));
         }
         return Vector3Int.zero;
     }

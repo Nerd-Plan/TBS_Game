@@ -67,7 +67,6 @@ public class EnemyAi : MonoBehaviour
     }
     private bool TryTakeEnemyAIAction(Action onEnemyAIActionComplete)
     {
-        Debug.Log(UnitManager.Instance.GetEnemyUnitList().Count);
         foreach (Unit enemyUnit in UnitManager.Instance.GetEnemyUnitList())
         {
             if (TryTakeEnemyAIAction(enemyUnit, onEnemyAIActionComplete))

@@ -7,8 +7,9 @@ using UnityEngine;
 using Random = System.Random;
 using TBS.Threading;
 using System.Collections.Generic;
+using System.IO;
 
-public class GameServer 
+public class GameServer : IDisposable
 {
     #region Prop's
     int port;
@@ -55,7 +56,7 @@ public class GameServer
         int player = odds >= 50 ? 0 : 1;
         Debug.Log(player);
         SendMessageToPlayer(player, Encoding.ASCII.GetBytes("First Move"));
-        SendMessageToPlayer(player == 0 ? 1 : 0, Encoding.ASCII.GetBytes("Not You'r Move"));
+        SendMessageToPlayer(player == 0 ? 1 : 2, Encoding.ASCII.GetBytes("Not You'r Move"));
     }
     #endregion
     #region GameProp's
@@ -81,8 +82,7 @@ public class GameServer
     public void StartServer()
     {
         try
-        {          
-            
+        {                     
             listener = new TcpListener(IPAddress.Any, port);
             listener.Start();
             listenerThread = new Thread(new ThreadStart(ListenForClients));
@@ -95,10 +95,12 @@ public class GameServer
             Debug.Log("Error starting server: " + e.Message);
         }
     }
+    
     public void Stop()
     {
         try
         {
+            
             MainThreadDispatcher.ExecuteOnMainThread(OnServerEnded,byte.MinValue);
             // stop the listener and dispose of resources
             listener?.Stop();
@@ -107,8 +109,8 @@ public class GameServer
             // stop the client threads and dispose of resources
             clientThread1?.Abort();
             clientThread2?.Abort();
-            clientStream1?.Dispose();
-            clientStream2?.Dispose();
+            clientStream1?.Close();
+            clientStream2?.Close();
             client1?.Close();
             client2?.Close();
         }
@@ -156,7 +158,7 @@ public class GameServer
             Debug.Log($"Player {player} connected.");
 
             NetworkStream stream = client.GetStream();
-            if(player == 1)
+            if (player == 1)
             {
                 client1 = client;
                 clientStream1 = stream;
@@ -208,7 +210,14 @@ public class GameServer
         catch (Exception e)
         {
             if (!client.Connected)
+            {
                 client.Close();           
+                if(ready>=2)
+                {
+                    //get back to loby
+                    return;
+                }
+            }
             Debug.Log("Error handling client communication: " + e.Message);            
         }
     }
@@ -216,15 +225,13 @@ public class GameServer
     {
         if (player == 1)
         {
-            client1.Close();
-            listener.Stop();
+            client1.Close();     
             listenerThread = new Thread(new ThreadStart(ListenForClient));
             listenerThread.Start();
         }
         else
         {
             client2.Close();
-            listener.Stop();
             listenerThread = new Thread(new ThreadStart(ListenForClient));
             listenerThread.Start();
         }
@@ -232,8 +239,22 @@ public class GameServer
     }
     private void SendMessageToPlayer(int player, byte[] data)
     {
-        NetworkStream Stream = (player == 1 ? clientStream1 : clientStream2);
-        Stream.Write(data, 0, data.Length);
+        NetworkStream stream = (player == 1 ? clientStream1 : clientStream2);
+        if (stream != null && stream.CanWrite)
+        {
+            try
+            {
+                stream.Write(data, 0, data.Length);
+            }
+            catch (IOException ex)
+            {
+                Console.WriteLine("Error sending message: " + ex.Message);
+            }
+        }
+        else
+        {
+            Console.WriteLine("Error sending message: stream is null or not writable");
+        }
     }
 
     #endregion
@@ -289,6 +310,11 @@ public class GameServer
         SendMessageToPlayer(1,Encoding.UTF8.GetBytes($"Instantiate Units On Side One"));  
         SendMessageToPlayer(2,Encoding.UTF8.GetBytes("Instantiate Units On Side Two"));
 
+    }
+
+    public void Dispose()
+    {
+        Stop();
     }
     #endregion
 }

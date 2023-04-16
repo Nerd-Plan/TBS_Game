@@ -13,7 +13,6 @@ namespace TBS.UI
 
         [SerializeField] Server Server;
         [SerializeField] Client client;
-        [SerializeField] GameObject game_manger;
 
 
         [SerializeField] string ip;
@@ -24,7 +23,7 @@ namespace TBS.UI
         {
             client = Instantiate(client_prefab, Vector3.zero, Quaternion.identity).GetComponent<Client>();
             client.ConnectToServer(ip,port);
-            game_manger = Instantiate(Game_Manger, Vector3.zero, Quaternion.identity);
+             Instantiate(Game_Manger, Vector3.zero, Quaternion.identity);
         }
         public void StartServer()
         {
