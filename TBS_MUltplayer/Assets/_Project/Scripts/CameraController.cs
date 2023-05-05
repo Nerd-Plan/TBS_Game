@@ -2,20 +2,22 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using Cinemachine;
+using System;
 
 public class CameraController : MonoBehaviour
 {
 
     private const float MIN_FOLLOW_Y_OFFSET = 2f;
     private const float MAX_FOLLOW_Y_OFFSET = 12f;
-
+    [SerializeField] LayerMask obsicals_Layer;
     [SerializeField] private CinemachineVirtualCamera cinemachineVirtualCamera;
 
     private CinemachineTransposer cinemachineTransposer;
     private Vector3 targetFollowOffset;
-
+    Camera cam;
     private void Start()
     {
+        cam = Camera.main;
         cinemachineTransposer = cinemachineVirtualCamera.GetCinemachineComponent<CinemachineTransposer>();
         targetFollowOffset = cinemachineTransposer.m_FollowOffset;
     }
@@ -26,6 +28,7 @@ public class CameraController : MonoBehaviour
         HandleRotation();
         HandleZoom();
     }
+   
 
     private void HandleMovement()
     {

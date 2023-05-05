@@ -1,4 +1,5 @@
 using System;
+using System.Collections;
 using System.Linq;
 using TBS.NetWork;
 using Unity.VisualScripting;
@@ -145,17 +146,30 @@ public class GameManger : MonoBehaviour
     #region Spawn Clients
     private void GameClient_SpwanUnitsOnSide(int i = 0)
     {
+
         if (i == 1)
         {
-            InstantiateNormalUnitOnSideOne();
-            InstantiateEnemyUnitOnSideTwo();
+           StartCoroutine("SetForPlayerOne");
         }
         else if(i==2)
         {
-            InstantiateEnemyUnitOnSideOne();
-            InstantiateNormalUnitOnSideTwo();
-            FindObjectOfType<CameraController>().transform.SetPositionAndRotation(new Vector3(10, 0, 38), new Quaternion(0, 180, 0, 0));
+            StartCoroutine("SetForPlayerTwo");
         }
+    }
+
+    private IEnumerator SetForPlayerTwo()
+    {
+        yield return new WaitForSeconds(1f);
+        InstantiateEnemyUnitOnSideOne();
+        InstantiateNormalUnitOnSideTwo();
+        FindObjectOfType<CameraController>().transform.SetPositionAndRotation(new Vector3(10, 0, 38), new Quaternion(0, 180, 0, 0));
+    }
+
+    private IEnumerator SetForPlayerOne()
+    {
+        yield return new WaitForSeconds(1f);
+        InstantiateNormalUnitOnSideOne();
+        InstantiateEnemyUnitOnSideTwo();
     }
 
     private void InstantiateNormalUnitOnSideOne()

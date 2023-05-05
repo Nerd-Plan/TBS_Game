@@ -46,6 +46,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   NormalUnit: {fileID: 7601346721002605773, guid: 69b98c41becc4ae4099f1eba6797785b,
     type: 3}
-  EnemyUnit: {fileID: 6947802751664692026, guid: 400cd0a8288305b469243396097f391c,
+  EnemyUnit: {fileID: 6947802751664692026, guid: 8aebeceb0b2db304580ced475f8b1aa9,
     type: 3}
   _unitsperplayer: 8
