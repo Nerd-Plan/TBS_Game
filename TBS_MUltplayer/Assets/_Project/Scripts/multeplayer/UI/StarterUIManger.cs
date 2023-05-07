@@ -13,6 +13,7 @@ namespace TBS.UI
 
         [SerializeField] Server Server;
         [SerializeField] Client client;
+        [SerializeField] GameObject G_M;
 
 
         [SerializeField] string ip;
@@ -23,16 +24,19 @@ namespace TBS.UI
         {
             client = Instantiate(client_prefab, Vector3.zero, Quaternion.identity).GetComponent<Client>();
             client.ConnectToServer(ip,port);
-             Instantiate(Game_Manger, Vector3.zero, Quaternion.identity);
+            G_M= Instantiate(Game_Manger, Vector3.zero, Quaternion.identity);
         }
         public void StartServer()
         {
             Server = Instantiate(Server_prefab, Vector3.zero, Quaternion.identity).GetComponent<Server>();
-            Server.StartServer(port);            
-            return;
+            Server.StartServer(port);
+            Invoke("StartClient", .2f);
+
         }
         public void Back()
         {
+            if ( Server != null)
+            { StopServer(); }
             if (client != null && Server != null)
             { StopClient(); StopServer(); }
             else if (client != null)
@@ -45,15 +49,20 @@ namespace TBS.UI
         public void StopClient()
         {
             Destroy(client.gameObject);
+            Destroy(G_M);
         }
         public void LocalHostPlay()
         {
             StartServer();
-            StartClient();
         }
         #endregion
         public void ClientReady() => client.GetGameClient().SendMessage("Ready");
         public void ClientCancel() => client.GetGameClient().SendMessage("Cancel");
 
+
+        public void StartSinglePlayer()
+        {
+            SceneManager.LoadScene(1);
+        }
     }
 }

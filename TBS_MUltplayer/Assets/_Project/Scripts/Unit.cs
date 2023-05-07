@@ -15,7 +15,7 @@ public class Unit : MonoBehaviour
 
     [SerializeField] private bool isEnemy;
 
-
+   //public FischlWorks_FogWar.csFogWar.FogRevealer FogRevealer { get; private set; }
     private GridPosition gridPosition;
     private HealthSystem healthSystem;
     private BaseAction[] baseActionArray;
@@ -25,6 +25,7 @@ public class Unit : MonoBehaviour
     {
         healthSystem = GetComponent<HealthSystem>();
         baseActionArray = GetComponents<BaseAction>();
+        //FogRevealer = new FischlWorks_FogWar.csFogWar.FogRevealer(transform,6,false);
     }
 
     private void Start()
