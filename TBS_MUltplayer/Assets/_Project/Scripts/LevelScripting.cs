@@ -14,7 +14,7 @@ public class LevelScripting : MonoBehaviour
     [SerializeField] private List<Door> doors;
 
     private bool hasShownFirstHider = false;
-
+    public bool GetHasShowFirstHider() => hasShownFirstHider;
     private void Start()
     {
         LevelGrid.Instance.OnAnyUnitMovedGridPosition += LevelGrid_OnAnyUnitMovedGridPosition;
@@ -35,6 +35,7 @@ public class LevelScripting : MonoBehaviour
             hasShownFirstHider = true;
             SetActiveGameObjectList(hider1List, false);
             SetActiveGameObjectList(enemy1List, true);
+           
         }
     }
 

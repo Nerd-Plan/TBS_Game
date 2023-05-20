@@ -84,7 +84,7 @@ public class GameServer : IDisposable
         {                     
             listener = new TcpListener(IPAddress.Any, port);
             listener.Start();
-            listenerThread = new Thread(new ThreadStart(ListenForClients));
+            listenerThread = new Thread(new ThreadStart(ListenForTCPClients));
             listenerThread.Start();
             Debug.Log("Server started and listening on port " + port);
             Ready = 0;
@@ -124,7 +124,8 @@ public class GameServer : IDisposable
 
     #region Server Client Communiction
 
-    private void ListenForClients()
+    
+    private void ListenForTCPClients()
     {
         try
         {
@@ -136,7 +137,7 @@ public class GameServer : IDisposable
             Debug.Log("Error accepting client connection: " + e.Message);
         }
     }
-    private void ListenForClient()
+    private void ListenForTCPClient()
     {
         if(client1.Connected)
         {
@@ -225,13 +226,13 @@ public class GameServer : IDisposable
         if (player == 1)
         {
             client1.Close();     
-            listenerThread = new Thread(new ThreadStart(ListenForClient));
+            listenerThread = new Thread(new ThreadStart(ListenForTCPClient));
             listenerThread.Start();
         }
         else
         {
             client2.Close();
-            listenerThread = new Thread(new ThreadStart(ListenForClient));
+            listenerThread = new Thread(new ThreadStart(ListenForTCPClient));
             listenerThread.Start();
         }
         Debug.Log($"player {player} Disconnected ");
@@ -314,6 +315,15 @@ public class GameServer : IDisposable
     public void Dispose()
     {
         Stop();
+    }
+
+    public int GetPort()
+    {
+        if (listener != null && listener.LocalEndpoint is IPEndPoint localEndpoint)
+        {
+            return localEndpoint.Port;
+        }
+        return-1;
     }
     #endregion
 }

@@ -10,7 +10,7 @@ public class TurnSystem : MonoBehaviour
 
 
     public event EventHandler OnTurnChanged;
-
+    public bool IsEndGame=false;    
 
     private int turnNumber = 1;
     private bool isPlayerTurn = true;

@@ -3,7 +3,6 @@ using System.Net.Sockets;
 using System.Text;
 using System.Threading;
 using TBS.Threading;
-using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
@@ -22,6 +21,7 @@ public class GameClient:IDisposable
     public event Action<byte> OnGameStart;
     public event Action<byte> OnSwitchTurns;
     Thread receivemessagethread;
+    public bool IsOwner=false;
     #endregion
 
     #region Game Prop's 
@@ -227,4 +227,10 @@ public class GameClient:IDisposable
     {
         Stop();
     }
+
+    public bool IsConnected()
+    {
+        return client.Connected;
+    }
+        
 }

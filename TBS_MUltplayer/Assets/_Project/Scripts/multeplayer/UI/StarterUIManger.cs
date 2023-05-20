@@ -1,7 +1,12 @@
-
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using TBS.NetWork;
+using TMPro;
+using System.Net;
+using System.Net.Sockets;
+using System.Net.NetworkInformation;
+using System;
+
 namespace TBS.UI
 {
     public class StarterUIManger : MonoBehaviour
@@ -16,23 +21,53 @@ namespace TBS.UI
         [SerializeField] GameObject G_M;
 
 
-        [SerializeField] string ip;
-        [SerializeField] int port;
+        [SerializeField] TMP_InputField ip;
+        [SerializeField] TMP_InputField port;
+        [SerializeField] TMP_Text ShowPort;
 
-        #region Start and Stop
+        [SerializeField] GameObject MultiplayerUI;
+        [SerializeField] GameObject ClientConnectedToServerUI;
+
+        [SerializeField] GameObject LoadingScreen;
+        #region Start and Stop            
         public void StartClient()
         {
+
             client = Instantiate(client_prefab, Vector3.zero, Quaternion.identity).GetComponent<Client>();
-            client.ConnectToServer(ip,port);
+            client.ConnectToServer(ip.text, int.Parse(port.text));
+            if (Server != null)
+            {               
+               client.GetGameClient().IsOwner = true;   
+            }
+            LoadingScreen.SetActive(true);
             G_M= Instantiate(Game_Manger, Vector3.zero, Quaternion.identity);
+            try
+            {
+                if (client.GetGameClient().IsConnected())
+                {
+                    MultiplayerUI.SetActive(false);
+                    ClientConnectedToServerUI.SetActive(true);
+                    LoadingScreen.SetActive(false);
+                }
+            }
+            catch
+            {               
+                    ClientCancel();              
+            }           
         }
+        
         public void StartServer()
         {
             Server = Instantiate(Server_prefab, Vector3.zero, Quaternion.identity).GetComponent<Server>();
-            Server.StartServer(port);
+            LoadingScreen.SetActive(true);
+            Server.StartServer(0);
+            ShowPort.text = Server.PortNumber().ToString();
+            port.text = Server.PortNumber().ToString();
             Invoke("StartClient", .2f);
 
         }
+
+    
         public void Back()
         {
             if ( Server != null)

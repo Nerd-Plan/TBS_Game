@@ -41,5 +41,10 @@ namespace TBS.NetWork
         {
             GameServer.Instance.Stop();
         }
+
+        public int PortNumber()
+        {
+            return GameServer.Instance.GetPort();
+        }
     }
 }
