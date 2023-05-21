@@ -138,6 +138,7 @@ public class GameManger : MonoBehaviour
     }
     private void GameClient_OnSwitchTurns(byte obj)
     {
+        if (TurnSystem.Instance)
         TurnSystem.Instance.NextTurn();
     }
     #endregion

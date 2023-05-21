@@ -4,7 +4,6 @@ using TBS.NetWork;
 using TMPro;
 using System.Net;
 using System.Net.Sockets;
-using System.Net.NetworkInformation;
 using System;
 
 namespace TBS.UI
@@ -23,7 +22,9 @@ namespace TBS.UI
 
         [SerializeField] TMP_InputField ip;
         [SerializeField] TMP_InputField port;
+
         [SerializeField] TMP_Text ShowPort;
+        [SerializeField] TMP_Text ShowHost;
 
         [SerializeField] GameObject MultiplayerUI;
         [SerializeField] GameObject ClientConnectedToServerUI;
@@ -34,13 +35,16 @@ namespace TBS.UI
         {
 
             client = Instantiate(client_prefab, Vector3.zero, Quaternion.identity).GetComponent<Client>();
-            client.ConnectToServer(ip.text, int.Parse(port.text));
+            client.ConnectToServer(GetLocalIPAddressFromCode(int.Parse(ip.text)), int.Parse(port.text));
+            ShowPort.text = int.Parse(port.text).ToString();
+            ShowHost.text= int.Parse(ip.text).ToString();
             if (Server != null)
             {               
                client.GetGameClient().IsOwner = true;   
             }
             LoadingScreen.SetActive(true);
-            G_M= Instantiate(Game_Manger, Vector3.zero, Quaternion.identity);
+            MultiplayerUI.SetActive(false);
+            G_M = Instantiate(Game_Manger, Vector3.zero, Quaternion.identity);
             try
             {
                 if (client.GetGameClient().IsConnected())
@@ -59,15 +63,43 @@ namespace TBS.UI
         public void StartServer()
         {
             Server = Instantiate(Server_prefab, Vector3.zero, Quaternion.identity).GetComponent<Server>();
+            MultiplayerUI.SetActive(false);
             LoadingScreen.SetActive(true);
             Server.StartServer(0);
             ShowPort.text = Server.PortNumber().ToString();
-            port.text = Server.PortNumber().ToString();
+            ShowHost.text = GetLocalIPAddressInCode().ToString();
+            port.text = ShowPort.text;
+            ip.text = ShowHost.text;
             Invoke("StartClient", .2f);
 
         }
+        public int GetLocalIPAddressInCode()
+        {
+            var host = Dns.GetHostEntry(Dns.GetHostName());
+            foreach (var ip in host.AddressList)
+            {
+                if (ip.AddressFamily == AddressFamily.InterNetwork)
+                {
+                    string myip= ip.ToString();
+                    IPAddress ipAddress = IPAddress.Parse(myip);
 
-    
+                    byte[] ipAddressBytes = ipAddress.GetAddressBytes();
+                    int ipAddressInt = BitConverter.ToInt32(ipAddressBytes, 0);
+                    return ipAddressInt;
+                }
+            }
+            throw new Exception("No network adapters with an IPv4 address in the system!");
+        }
+        public string GetLocalIPAddressFromCode(int ipAddressInt)
+        {
+            byte[] ipAddressBytes = BitConverter.GetBytes(ipAddressInt);
+            IPAddress ipAddress = new IPAddress(ipAddressBytes);
+
+            string ipAddressString = ipAddress.ToString();
+            return ipAddressString;
+        }
+
+
         public void Back()
         {
             if ( Server != null)

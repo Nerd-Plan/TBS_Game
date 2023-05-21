@@ -6,11 +6,11 @@ using TBS.Threading;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
-public class GameClient:IDisposable
+public class GameClient : IDisposable
 {
     #region Prop's
-    private  TcpClient client;
-    private  NetworkStream stream;
+    private TcpClient client;
+    private NetworkStream stream;
     private byte[] buffer = new byte[1024];
     string ipAddress;
     int port;
@@ -21,7 +21,7 @@ public class GameClient:IDisposable
     public event Action<byte> OnGameStart;
     public event Action<byte> OnSwitchTurns;
     Thread receivemessagethread;
-    public bool IsOwner=false;
+    public bool IsOwner = false;
     #endregion
 
     #region Game Prop's 
@@ -34,12 +34,19 @@ public class GameClient:IDisposable
     public event Action<byte> OnClientDisconnected;
     #endregion
 
-    #region Client 
+    #region encryption detals
+    EncryptionKeys encryptionKeys;
+
+    string server_public_key;
+    #endregion
+
+    #region Client Start And Stop
 
     public void Connect()
     {
         try
         {
+            encryptionKeys = new EncryptionKeys();
             client = new TcpClient(ipAddress, port);
             stream = client.GetStream();
             receivemessagethread = new Thread(new ThreadStart(ReceiveMessage));
@@ -54,28 +61,41 @@ public class GameClient:IDisposable
         }
     }
 
+    public void Dispose()
+    {
+        Stop();
+    }
+
+    public bool IsConnected()
+    {
+        return client.Connected;
+    }
+
     public void Stop()
     {
         Disconnect();
     }
-    
+
     public void Disconnect()
     {
-        
+
         try
-        {           
-           if (client.Connected)
-               SendMessage("Log Out");
-           client?.Close();
-           stream?.Close();
-           receivemessagethread?.Abort();
-           Debug.Log("Disconnected from server.");           
+        {
+            if (client.Connected)
+                SendMessage("Log Out");
+            client?.Close();
+            stream?.Close();
+            receivemessagethread?.Abort();
+            Debug.Log("Disconnected from server.");
         }
         catch (Exception e)
         {
             Debug.Log("Error disconnecting from server: " + e.Message);
         }
     }
+    #endregion
+
+    #region Client Only
 
     public void SendMessage(string message)
     {
@@ -105,8 +125,6 @@ public class GameClient:IDisposable
             Debug.Log("Error sending data: client is not connected");
         }
     }
-
-
     public void ReceiveMessage()
     {
         try
@@ -160,13 +178,12 @@ public class GameClient:IDisposable
             return;
         SendMessage(((BaseAction)sender).GetActionAsString());
     }
-    #endregion
 
     private void DoAsTheServerCommends(string servercommend)
     {
-        if (StartBoardCommands(servercommend)){return;}
-        if (GameActionsCommands(servercommend)){return;}
-        if(GameSwitchTurnsCommands(servercommend)){return;}
+        if (StartBoardCommands(servercommend)) { return; }
+        if (GameActionsCommands(servercommend)) { return; }
+        if (GameSwitchTurnsCommands(servercommend)) { return; }
     }
 
     private bool GameSwitchTurnsCommands(string servercommend)
@@ -180,10 +197,10 @@ public class GameClient:IDisposable
     private bool GameActionsCommands(string servercommend)
     {
         if (!servercommend.Contains("Action"))
-        return false;
+            return false;
         MainThreadDispatcher.ExecuteOnMainThread(OnUnitDoAction, servercommend);
         return true;
-        
+
     }
 
     private bool StartBoardCommands(string servercommend)
@@ -199,23 +216,23 @@ public class GameClient:IDisposable
             return true;
         }
         else if (servercommend.Contains("Instantiate Units"))
-        { 
+        {
             if (servercommend.Contains("Side One"))
             {
-                MainThreadDispatcher.ExecuteOnMainThread(OnSpawnUnitsOnSide,1);
+                MainThreadDispatcher.ExecuteOnMainThread(OnSpawnUnitsOnSide, 1);
             }
             else
             {
-                MainThreadDispatcher.ExecuteOnMainThread(OnSpawnUnitsOnSide,2);
+                MainThreadDispatcher.ExecuteOnMainThread(OnSpawnUnitsOnSide, 2);
             }
             return true;
         }
-        else if(servercommend.Contains("First Move"))
+        else if (servercommend.Contains("First Move"))
         {
             MainThreadDispatcher.ExecuteOnMainThread(OnPlayerStartGameMove, true);
             return true;
         }
-        else if(servercommend.Contains("Not You'r Move"))
+        else if (servercommend.Contains("Not You'r Move"))
         {
             MainThreadDispatcher.ExecuteOnMainThread(OnPlayerStartGameMove, false);
             return true;
@@ -223,14 +240,6 @@ public class GameClient:IDisposable
         return false;
     }
 
-    public void Dispose()
-    {
-        Stop();
-    }
+    #endregion
 
-    public bool IsConnected()
-    {
-        return client.Connected;
-    }
-        
 }

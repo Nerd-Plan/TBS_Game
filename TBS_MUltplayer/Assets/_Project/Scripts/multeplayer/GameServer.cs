@@ -41,8 +41,8 @@ public class GameServer : IDisposable
             ready = value;
             if (ready == 2)
             {
-                SendMessageToPlayer(0, Encoding.ASCII.GetBytes("Game Has Been Started"));
-                SendMessageToPlayer(1, Encoding.ASCII.GetBytes("Game Has Been Started"));
+                SendMessageToPlayer(0, ("Game Has Been Started"));
+                SendMessageToPlayer(1, ("Game Has Been Started"));
                 RandomPlayerStart();
                 // player  with playerid starts
             }
@@ -55,14 +55,22 @@ public class GameServer : IDisposable
         int odds = random.Next(0, 101);
         int player = odds >= 50 ? 0 : 1;
         Debug.Log(player);
-        SendMessageToPlayer(player, Encoding.ASCII.GetBytes("First Move"));
-        SendMessageToPlayer(player == 0 ? 1 : 2, Encoding.ASCII.GetBytes("Not You'r Move"));
+        SendMessageToPlayer(player, ("First Move"));
+        SendMessageToPlayer(player == 0 ? 1 : 2, ("Not You'r Move"));
     }
     #endregion
+
     #region GameProp's
 
-    Dictionary<int,Tuple<int,string>> moves_history=new Dictionary<int,Tuple<int,string>>();
+    Dictionary<int, Tuple<int, string>> moves_history = new Dictionary<int, Tuple<int, string>>();
     #endregion
+
+    #region encryption detals
+    EncryptionKeys encryptionKeys;
+
+    string[] players_public_key;
+    #endregion
+
 
     #region Start and Stop Server 
     public GameServer()
@@ -76,12 +84,11 @@ public class GameServer : IDisposable
             return;
         }
     }
-
-
     public void StartServer()
     {
         try
-        {                     
+        {
+            encryptionKeys = new EncryptionKeys();  
             listener = new TcpListener(IPAddress.Any, port);
             listener.Start();
             listenerThread = new Thread(new ThreadStart(ListenForTCPClients));
@@ -94,13 +101,12 @@ public class GameServer : IDisposable
             Debug.Log("Error starting server: " + e.Message);
         }
     }
-    
     public void Stop()
     {
         try
         {
-            
-            MainThreadDispatcher.ExecuteOnMainThread(OnServerEnded,byte.MinValue);
+
+            MainThreadDispatcher.ExecuteOnMainThread(OnServerEnded, byte.MinValue);
             // stop the listener and dispose of resources
             listener?.Stop();
 
@@ -120,11 +126,6 @@ public class GameServer : IDisposable
 
         Debug.Log("Server stopped.");
     }
-    #endregion
-
-    #region Server Client Communiction
-
-    
     private void ListenForTCPClients()
     {
         try
@@ -139,7 +140,7 @@ public class GameServer : IDisposable
     }
     private void ListenForTCPClient()
     {
-        if(client1.Connected)
+        if (client1.Connected)
         {
             ListenForClient(2);
         }
@@ -165,10 +166,10 @@ public class GameServer : IDisposable
             }
             else
             {
-                client2= client;
+                client2 = client;
                 clientStream2 = stream;
             }
-            Thread thread = new Thread(() => HandleClientComm(player,stream,client));
+            Thread thread = new Thread(() => HandleClientComm(player, stream, client));
             thread.Start();
         }
         catch (Exception e)
@@ -176,12 +177,34 @@ public class GameServer : IDisposable
             Debug.Log("Error accepting client connection: " + e.Message);
         }
     }
+    private void DisconnectPlayer(int player)
+    {
+        if (player == 1)
+        {
+            client1.Close();
+            listenerThread = new Thread(new ThreadStart(ListenForTCPClient));
+            listenerThread.Start();
+        }
+        else
+        {
+            client2.Close();
+            listenerThread = new Thread(new ThreadStart(ListenForTCPClient));
+            listenerThread.Start();
+        }
+        Debug.Log($"player {player} Disconnected ");
+    }
+
+    #endregion
+
+    #region Server Client Communiction
+
+
     private void HandleClientComm(int player, NetworkStream stream, TcpClient client)
     {
         try
         {
-            SendMessageToPlayer(player, Encoding.ASCII.GetBytes($"Hello Player {player}, welcome to the server"));
-            bool shouldListen=true;
+            SendMessageToPlayer(player, ($"Hello Player {player}, welcome to the server"));
+            bool shouldListen = true;
             while (shouldListen)
             {
                 // read data from the client
@@ -204,47 +227,31 @@ public class GameServer : IDisposable
                     shouldListen = false;
                     return;
                 }
-                HandleMessagesFromClient(player,message);
+                HandleMessagesFromClient(player, message);
             }
         }
         catch (Exception e)
         {
             if (!client.Connected)
             {
-                client.Close();           
-                if(ready>=2)
+                client.Close();
+                if (ready >= 2)
                 {
                     //get back to loby
                     return;
                 }
             }
-            Debug.Log("Error handling client communication: " + e.Message);            
+            Debug.Log("Error handling client communication: " + e.Message);
         }
     }
-    private void DisconnectPlayer(int player)
-    {
-        if (player == 1)
-        {
-            client1.Close();     
-            listenerThread = new Thread(new ThreadStart(ListenForTCPClient));
-            listenerThread.Start();
-        }
-        else
-        {
-            client2.Close();
-            listenerThread = new Thread(new ThreadStart(ListenForTCPClient));
-            listenerThread.Start();
-        }
-        Debug.Log($"player {player} Disconnected ");
-    }
-    private void SendMessageToPlayer(int player, byte[] data)
+    private void SendMessageToPlayer(int player, string data)
     {
         NetworkStream stream = (player == 1 ? clientStream1 : clientStream2);
         if (stream != null && stream.CanWrite)
         {
             try
             {
-                stream.Write(data, 0, data.Length);
+                stream.Write(Encoding.UTF8.GetBytes( data), 0, data.Length);
             }
             catch (IOException ex)
             {
@@ -263,22 +270,22 @@ public class GameServer : IDisposable
     #region Handle Client messages
 
     //other class
-    private void HandleMessagesFromClient(int player,string message)
+    private void HandleMessagesFromClient(int player, string message)
     {
         if (Ready != 2)
         {
-           HandleStartGameMessage(message);
+            HandleStartGameMessage(message);
         }
-       if(HandleGameMessage(player, message)) { return; }
-       if(HandleSwitchTurnsMessage(player, message)) { return; }
+        if (HandleGameMessage(player, message)) { return; }
+        if (HandleSwitchTurnsMessage(player, message)) { return; }
 
         //Brodcast
     }
-    private bool HandleSwitchTurnsMessage(int player,string message)
+    private bool HandleSwitchTurnsMessage(int player, string message)
     {
-        if(!message.Contains("Switch Turns"))
+        if (!message.Contains("Switch Turns"))
             return false;
-        SendMessageToPlayer(player == 1 ? 2 : 1, Encoding.UTF8.GetBytes(message));
+        SendMessageToPlayer(player == 1 ? 2 : 1, (message));
         return true;
     }
     private void HandleStartGameMessage(string message)
@@ -292,10 +299,7 @@ public class GameServer : IDisposable
     {
         if (!message.Contains("Action"))
             return false;
-        if (!message.Contains("key123"))
-            return false;
-        message = message.Replace("key123", "");
-        SendMessageToPlayer(player == 1 ? 2 : 1, Encoding.ASCII.GetBytes(message));
+        SendMessageToPlayer(player == 1 ? 2 : 1, (message));
         return true;
     }
 
@@ -305,10 +309,10 @@ public class GameServer : IDisposable
 
     public void SetBoard()
     {
-        SendMessageToPlayer(1, Encoding.UTF8.GetBytes($"SetBoard"));
-        SendMessageToPlayer(2, Encoding.UTF8.GetBytes($"SetBoard"));
-        SendMessageToPlayer(1,Encoding.UTF8.GetBytes($"Instantiate Units On Side One"));  
-        SendMessageToPlayer(2,Encoding.UTF8.GetBytes("Instantiate Units On Side Two"));
+        SendMessageToPlayer(1, ($"SetBoard"));
+        SendMessageToPlayer(2, ($"SetBoard"));
+        SendMessageToPlayer(1, ($"Instantiate Units On Side One"));
+        SendMessageToPlayer(2, ("Instantiate Units On Side Two"));
 
     }
 
@@ -323,7 +327,7 @@ public class GameServer : IDisposable
         {
             return localEndpoint.Port;
         }
-        return-1;
+        return -1;
     }
     #endregion
 }
