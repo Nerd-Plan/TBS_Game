@@ -7,7 +7,7 @@ public class SpinAction : BaseAction
 {
 
     private float totalSpinAmount;
-    public override string GetActionAsString() => $"Spin Action , Unit : {GetUnit().name}, Position {GetUnit().GetWorldPosition()} key123";
+    public override string GetActionAsString() => $"Spin Action , Unit : {GetUnit().name}, Position {GetUnit().GetWorldPosition()} ";
 
     private void Update()
     {

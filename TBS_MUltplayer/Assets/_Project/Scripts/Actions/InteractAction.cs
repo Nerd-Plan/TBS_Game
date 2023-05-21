@@ -80,6 +80,6 @@ public class InteractAction : BaseAction
 
     public override string GetActionAsString()
     {
-       return $"Interact Action , Unit : {GetUnit().name}, Position {LevelGrid.Instance.GetWorldPosition(interactablepos)} key123";
+       return $"Interact Action , Unit : {GetUnit().name}, Position {LevelGrid.Instance.GetWorldPosition(interactablepos)} ";
     }
 }

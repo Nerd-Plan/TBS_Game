@@ -135,6 +135,6 @@ public class MoveAction : BaseAction
             actionValue = targetCountAtGridPosition * 10,
         };
     }
-    public override string GetActionAsString() => $"Move Action , Unit : {GetUnit().name}, Position {targetPosition} key123";
+    public override string GetActionAsString() => $"Move Action , Unit : {GetUnit().name}, Position {targetPosition} ";
 
 }

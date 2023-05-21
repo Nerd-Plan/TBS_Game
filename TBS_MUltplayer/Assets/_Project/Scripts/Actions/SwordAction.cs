@@ -140,7 +140,7 @@ public class SwordAction : BaseAction
         return maxSwordDistance;
     }
 
-    public override string GetActionAsString() => $"Sword Action , Unit : {GetUnit().name}, Position {targetUnit.GetWorldPosition()} key123";
+    public override string GetActionAsString() => $"Sword Action , Unit : {GetUnit().name}, Position {targetUnit.GetWorldPosition()} ";
    
 
     

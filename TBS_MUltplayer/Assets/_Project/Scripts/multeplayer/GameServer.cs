@@ -292,9 +292,6 @@ public class GameServer : IDisposable
     {
         if (!message.Contains("Action"))
             return false;
-        if (!message.Contains("key123"))
-            return false;
-        message = message.Replace("key123", "");
         SendMessageToPlayer(player == 1 ? 2 : 1, Encoding.ASCII.GetBytes(message));
         return true;
     }

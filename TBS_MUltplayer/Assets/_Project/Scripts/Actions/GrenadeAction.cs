@@ -9,7 +9,7 @@ public class GrenadeAction : BaseAction
 
     [SerializeField] private Transform grenadeProjectilePrefab;
 
-    public override string GetActionAsString() => $"Grenade Action , Unit : {GetUnit().name}, Position {targetpos} key123";
+    public override string GetActionAsString() => $"Grenade Action , Unit : {GetUnit().name}, Position {targetpos} ";
 
     private int maxThrowDistance = 7;
 

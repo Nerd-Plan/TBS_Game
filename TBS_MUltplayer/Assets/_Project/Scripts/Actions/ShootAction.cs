@@ -212,6 +212,6 @@ public class ShootAction : BaseAction
     {
         return GetValidActionGridPositionList(gridPosition).Count;
     }
-    public override string GetActionAsString() => $"Shoot Action , Unit : {GetUnit().name}, Position {GetTargetUnit().GetWorldPosition()} key123";
+    public override string GetActionAsString() => $"Shoot Action , Unit : {GetUnit().name}, Position {GetTargetUnit().GetWorldPosition()} ";
 
 }
