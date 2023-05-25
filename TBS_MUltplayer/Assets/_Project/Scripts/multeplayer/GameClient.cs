@@ -144,7 +144,6 @@ public class GameClient : IDisposable
     }
     public void ReceiveMessage()
     {
-        //SendMessage(Encoding.UTF8.GetString( EncryptionHelper.Encrypt("This is encrypted message ", server_public_key)));
         try
         {         
             int bytesRead;

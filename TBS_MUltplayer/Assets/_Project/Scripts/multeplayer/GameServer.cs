@@ -231,9 +231,6 @@ public class GameServer : IDisposable
     {
         try
         {
-            //byte[] encryptedmessg = EncryptionHelper.Encrypt($"Hello Player {player}", players_public_key[player - 1]);
-            //Debug.Log("encrypted message: " + Encoding.UTF8.GetString(encryptedmessg));
-            //stream.Write(encryptedmessg, 0, encryptedmessg.Length); 
             SendMessageToPlayer(player, $"Hello Player {player}");
             bool shouldListen = true;
             while (shouldListen)
