@@ -71,7 +71,6 @@ public class GameServer : IDisposable
     string[] players_public_key;
     #endregion
 
-
     #region Start and Stop Server 
     public GameServer()
     {
@@ -84,10 +83,12 @@ public class GameServer : IDisposable
             return;
         }
     }
+
     public void StartServer()
     {
         try
         {
+            players_public_key = new string[2];
             encryptionKeys = new EncryptionKeys();  
             listener = new TcpListener(IPAddress.Any, port);
             listener.Start();
@@ -126,6 +127,7 @@ public class GameServer : IDisposable
 
         Debug.Log("Server stopped.");
     }
+
     private void ListenForTCPClients()
     {
         try
@@ -150,6 +152,7 @@ public class GameServer : IDisposable
         }
 
     }
+
     private void ListenForClient(int player)
     {
         try
@@ -169,6 +172,9 @@ public class GameServer : IDisposable
                 client2 = client;
                 clientStream2 = stream;
             }
+
+            ExchangePublicKeys(client, player);
+
             Thread thread = new Thread(() => HandleClientComm(player, stream, client));
             thread.Start();
         }
@@ -177,6 +183,8 @@ public class GameServer : IDisposable
             Debug.Log("Error accepting client connection: " + e.Message);
         }
     }
+
+  
     private void DisconnectPlayer(int player)
     {
         if (player == 1)
@@ -194,16 +202,36 @@ public class GameServer : IDisposable
         Debug.Log($"player {player} Disconnected ");
     }
 
+    public void ExchangePublicKeys(TcpClient client,int player)
+    {
+        Stream stream=   client.GetStream();
+        //Send Pulbic Server Key
+        stream.Write(Encoding.UTF8.GetBytes(encryptionKeys.public_key), 0, Encoding.UTF8.GetBytes(encryptionKeys.public_key).Length);
+        stream.Write(Encoding.UTF8.GetBytes(string.Empty), 0, Encoding.UTF8.GetBytes(string.Empty).Length);
+        // read data from the client
+        byte[] data = new byte[client.ReceiveBufferSize];
+        int bytesRead = stream.Read(data, 0, data.Length);
+        if (bytesRead <= 0)
+        {
+            Debug.Log("Player " + player + " disconnected.");
+            DisconnectPlayer(player);
+            return;
+        }
+        string message = Encoding.ASCII.GetString(data, 0, bytesRead);
+        players_public_key[player - 1] = message;
+        Debug.Log("Player " + player + " Public Key: "+players_public_key[player-1]);
+        data=new byte[] {byte.MinValue};
+        bytesRead = 0;
+    }
     #endregion
 
     #region Server Client Communiction
-
 
     private void HandleClientComm(int player, NetworkStream stream, TcpClient client)
     {
         try
         {
-            SendMessageToPlayer(player, ($"Hello Player {player}, welcome to the server"));
+            
             bool shouldListen = true;
             while (shouldListen)
             {
@@ -251,16 +279,16 @@ public class GameServer : IDisposable
         {
             try
             {
-                stream.Write(Encoding.UTF8.GetBytes( data), 0, data.Length);
+                stream.Write(Encoding.UTF8.GetBytes(data), 0, data.Length);
             }
             catch (IOException ex)
             {
-                Console.WriteLine("Error sending message: " + ex.Message);
+               Debug.Log("Error sending message: " + ex.Message);
             }
         }
         else
         {
-            Console.WriteLine("Error sending message: stream is null or not writable");
+            Debug.Log("Error sending message: stream is null or not writable");
         }
     }
 
@@ -306,7 +334,6 @@ public class GameServer : IDisposable
     #endregion
 
     #region Game
-
     public void SetBoard()
     {
         SendMessageToPlayer(1, ($"SetBoard"));
@@ -315,6 +342,7 @@ public class GameServer : IDisposable
         SendMessageToPlayer(2, ("Instantiate Units On Side Two"));
 
     }
+
 
     public void Dispose()
     {

@@ -49,6 +49,10 @@ public class GameClient : IDisposable
             encryptionKeys = new EncryptionKeys();
             client = new TcpClient(ipAddress, port);
             stream = client.GetStream();
+
+            ExchangePublicKeys();
+
+
             receivemessagethread = new Thread(new ThreadStart(ReceiveMessage));
             receivemessagethread.Start();
             SceneManager.sceneLoaded += OnSceneLoaded;
@@ -59,6 +63,17 @@ public class GameClient : IDisposable
             Debug.Log("Error connecting to server: " + e.Message);
             return;
         }
+    }
+
+
+    private void ExchangePublicKeys()
+    {
+        //Recv Server Public Key
+        stream.Read(buffer, 0, buffer.Length);
+        server_public_key = Encoding.UTF8.GetString(buffer);
+        Debug.Log("server Public Key: "+server_public_key);
+        //Send Client Public Key
+        stream.Write(Encoding.UTF8.GetBytes(encryptionKeys.public_key), 0, Encoding.UTF8.GetBytes(encryptionKeys.public_key).Length);
     }
 
     public void Dispose()
@@ -128,12 +143,14 @@ public class GameClient : IDisposable
     public void ReceiveMessage()
     {
         try
-        {
+        {         
+            int bytesRead;
+            string response;
             while (true)
             {
                 // read data from the server into the buffer
-                int bytesRead = stream.Read(buffer, 0, buffer.Length);
-                string response = Encoding.ASCII.GetString(buffer);
+                bytesRead = stream.Read(buffer, 0, buffer.Length);
+                response = Encoding.ASCII.GetString(buffer,0,bytesRead);
                 Debug.Log(response);
                 DoAsTheServerCommends(response);
             }

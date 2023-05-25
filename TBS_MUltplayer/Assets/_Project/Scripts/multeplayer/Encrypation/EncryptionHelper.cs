@@ -1,53 +1,33 @@
-using System.IO;
-using System;
+
 using System.Security.Cryptography;
+using System.Security.Cryptography.X509Certificates;
 using System.Text;
 
 
 public class EncryptionHelper
 {
-    public static byte[] EncryptString(string plainText, string EncryptionKey)
+
+    public static byte[] Encrypt(string data, string publicKeyXml)
     {
-        using (Aes aesAlg = Aes.Create())
+        using (RSACryptoServiceProvider rsa = new RSACryptoServiceProvider())
         {
-            aesAlg.Key = Encoding.UTF8.GetBytes(EncryptionKey);
-            aesAlg.Mode = CipherMode.ECB;
-            aesAlg.Padding = PaddingMode.Zeros;
-
-            ICryptoTransform encryptor = aesAlg.CreateEncryptor(aesAlg.Key, aesAlg.IV);
-
-            using (MemoryStream msEncrypt = new MemoryStream())
-            {
-                using (CryptoStream csEncrypt = new CryptoStream(msEncrypt, encryptor, CryptoStreamMode.Write))
-                {
-                    byte[] data = Encoding.UTF8.GetBytes(plainText);
-                    csEncrypt.Write(data, 0, data.Length);
-                }
-                return msEncrypt.ToArray();
-            }
+            rsa.FromXmlString(publicKeyXml);
+            byte[] plainBytes = Encoding.UTF8.GetBytes(data);
+            byte[] encryptedBytes = rsa.Encrypt(plainBytes, false);
+            return encryptedBytes;
         }
     }
 
-    public static byte[] DecryptBytes(byte[] encryptedData, int length, string EncryptionKey)
+    public static string Decrypt(byte[] encryptedData, string privateKeyXml)
     {
-        using (Aes aesAlg = Aes.Create())
+        using (RSACryptoServiceProvider rsa = new RSACryptoServiceProvider())
         {
-            aesAlg.Key = Encoding.UTF8.GetBytes(EncryptionKey);
-            aesAlg.Mode = CipherMode.ECB;
-            aesAlg.Padding = PaddingMode.Zeros;
-
-            ICryptoTransform decryptor = aesAlg.CreateDecryptor(aesAlg.Key, aesAlg.IV);
-
-            using (MemoryStream msDecrypt = new MemoryStream())
-            {
-                using (CryptoStream csDecrypt = new CryptoStream(msDecrypt, decryptor, CryptoStreamMode.Write))
-                {
-                    csDecrypt.Write(encryptedData, 0, length);
-                }
-                return msDecrypt.ToArray();
-            }
+            rsa.FromXmlString(privateKeyXml);
+            byte[] decryptedBytes = rsa.Decrypt(encryptedData, false);
+            string decryptedText = Encoding.UTF8.GetString(decryptedBytes);
+            return decryptedText;
         }
     }
-
 }
+
 
