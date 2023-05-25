@@ -17,7 +17,7 @@ public class EncryptionKeys
     }
     public EncryptionKeys()
     {
-        using (RSACryptoServiceProvider rsa = new RSACryptoServiceProvider(512))
+        using (RSACryptoServiceProvider rsa = new RSACryptoServiceProvider(2048))
         {
             // Export private key
             private_key = rsa.ToXmlString(true);

@@ -41,8 +41,8 @@ public class GameServer : IDisposable
             ready = value;
             if (ready == 2)
             {
-                SendMessageToPlayer(0, ("Game Has Been Started"));
                 SendMessageToPlayer(1, ("Game Has Been Started"));
+                SendMessageToPlayer(2, ("Game Has Been Started"));
                 RandomPlayerStart();
                 // player  with playerid starts
             }
@@ -204,7 +204,7 @@ public class GameServer : IDisposable
 
     public void ExchangePublicKeys(TcpClient client,int player)
     {
-        Stream stream=   client.GetStream();
+        Stream stream=  client.GetStream();
         //Send Pulbic Server Key
         stream.Write(Encoding.UTF8.GetBytes(encryptionKeys.public_key), 0, Encoding.UTF8.GetBytes(encryptionKeys.public_key).Length);
         stream.Write(Encoding.UTF8.GetBytes(string.Empty), 0, Encoding.UTF8.GetBytes(string.Empty).Length);
@@ -231,12 +231,15 @@ public class GameServer : IDisposable
     {
         try
         {
-            
+            //byte[] encryptedmessg = EncryptionHelper.Encrypt($"Hello Player {player}", players_public_key[player - 1]);
+            //Debug.Log("encrypted message: " + Encoding.UTF8.GetString(encryptedmessg));
+            //stream.Write(encryptedmessg, 0, encryptedmessg.Length); 
+            SendMessageToPlayer(player, $"Hello Player {player}");
             bool shouldListen = true;
             while (shouldListen)
             {
                 // read data from the client
-                byte[] data = new byte[client.ReceiveBufferSize];
+                byte[] data = new byte[client.ReceiveBufferSize];                
                 int bytesRead = stream.Read(data, 0, data.Length);
                 if (bytesRead <= 0)
                 {
@@ -245,9 +248,11 @@ public class GameServer : IDisposable
                     shouldListen = false;
                     return;
                 }
-
-                string message = Encoding.ASCII.GetString(data, 0, bytesRead);
+                byte[] encryptedData = new byte[bytesRead];
+                Array.Copy(data,encryptedData, bytesRead);
+                string message = EncryptionHelper.Decrypt(encryptedData, encryptionKeys.private_key);
                 Debug.Log("Player " + player + " sent: " + message);
+                                
                 if (message.Contains("Log Out"))
                 {
                     Debug.Log("Player " + player + " disconnected.");
@@ -255,7 +260,8 @@ public class GameServer : IDisposable
                     shouldListen = false;
                     return;
                 }
-                HandleMessagesFromClient(player, message);
+                    HandleMessagesFromClient(player, message);
+               
             }
         }
         catch (Exception e)
@@ -269,7 +275,7 @@ public class GameServer : IDisposable
                     return;
                 }
             }
-            Debug.Log("Error handling client communication: " + e.Message);
+            Debug.Log($"Error handling client {player} communication: " + e.Message);
         }
     }
     private void SendMessageToPlayer(int player, string data)
@@ -279,7 +285,9 @@ public class GameServer : IDisposable
         {
             try
             {
-                stream.Write(Encoding.UTF8.GetBytes(data), 0, data.Length);
+                byte[] encryptedmessg = EncryptionHelper.Encrypt(data, players_public_key[player - 1]);
+                Debug.Log("Server Sending encoded message : "+Encoding.UTF8.GetString(encryptedmessg));
+                stream.Write(encryptedmessg, 0, encryptedmessg.Length);
             }
             catch (IOException ex)
             {
@@ -302,7 +310,7 @@ public class GameServer : IDisposable
     {
         if (Ready != 2)
         {
-            HandleStartGameMessage(message);
+            HandleStartGameMessage(message);                       
         }
         if (HandleGameMessage(player, message)) { return; }
         if (HandleSwitchTurnsMessage(player, message)) { return; }
@@ -318,10 +326,10 @@ public class GameServer : IDisposable
     }
     private void HandleStartGameMessage(string message)
     {
-        if (message.Contains("Ready"))
-            Ready++;
-        else if (message.Contains("Cancel"))
-            Ready--;
+            if (message.Contains("Ready"))
+                Ready++;
+            else if (message.Contains("Cancel"))
+                Ready--;       
     }
     private bool HandleGameMessage(int player, string message)
     {

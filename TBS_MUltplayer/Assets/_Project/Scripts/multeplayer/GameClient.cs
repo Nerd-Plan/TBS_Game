@@ -69,8 +69,8 @@ public class GameClient : IDisposable
     private void ExchangePublicKeys()
     {
         //Recv Server Public Key
-        stream.Read(buffer, 0, buffer.Length);
-        server_public_key = Encoding.UTF8.GetString(buffer);
+       int byteread= stream.Read(buffer, 0, buffer.Length);
+        server_public_key = Encoding.UTF8.GetString(buffer,0, byteread);
         Debug.Log("server Public Key: "+server_public_key);
         //Send Client Public Key
         stream.Write(Encoding.UTF8.GetBytes(encryptionKeys.public_key), 0, Encoding.UTF8.GetBytes(encryptionKeys.public_key).Length);
@@ -124,6 +124,8 @@ public class GameClient : IDisposable
                 if (stream != null && stream.CanWrite)
                 {
                     byte[] data = Encoding.UTF8.GetBytes(message);
+                    data = EncryptionHelper.Encrypt(message, server_public_key);
+                    Debug.Log("Client Encrypt Message: "+Encoding.UTF8.GetString(data));
                     // Write data to NetworkStream
                     stream.Write(data, 0, data.Length);
                 }
@@ -142,6 +144,7 @@ public class GameClient : IDisposable
     }
     public void ReceiveMessage()
     {
+        //SendMessage(Encoding.UTF8.GetString( EncryptionHelper.Encrypt("This is encrypted message ", server_public_key)));
         try
         {         
             int bytesRead;
@@ -150,7 +153,9 @@ public class GameClient : IDisposable
             {
                 // read data from the server into the buffer
                 bytesRead = stream.Read(buffer, 0, buffer.Length);
-                response = Encoding.ASCII.GetString(buffer,0,bytesRead);
+                byte[] encryptedData = new byte[bytesRead];
+                Array.Copy(buffer, 0, encryptedData, 0, bytesRead);
+                response = EncryptionHelper.Decrypt(encryptedData, encryptionKeys.private_key);
                 Debug.Log(response);
                 DoAsTheServerCommends(response);
             }
