@@ -53,10 +53,10 @@ public class GameServer : IDisposable
     {
         Random random = new Random();
         int odds = random.Next(0, 101);
-        int player = odds >= 50 ? 0 : 1;
+        int player = odds >= 50 ? 1 : 2;
         Debug.Log(player);
         SendMessageToPlayer(player, ("First Move"));
-        SendMessageToPlayer(player == 0 ? 1 : 2, ("Not You'r Move"));
+        SendMessageToPlayer(player == 2? 1 : 2, ("Not You'r Move"));
     }
     #endregion
 
@@ -74,7 +74,7 @@ public class GameServer : IDisposable
     #region Start and Stop Server 
     public GameServer()
     {
-        if (Instance == null && Instance != this)
+        if (Instance == null || Instance != this)
         {
             Instance = this;
         }
@@ -109,22 +109,40 @@ public class GameServer : IDisposable
 
             MainThreadDispatcher.ExecuteOnMainThread(OnServerEnded, byte.MinValue);
             // stop the listener and dispose of resources
-            listener?.Stop();
-
-
+            listener.Stop();
             // stop the client threads and dispose of resources
-            clientThread1?.Abort();
-            clientThread2?.Abort();
-            clientStream1?.Close();
-            clientStream2?.Close();
-            client1?.Close();
-            client2?.Close();
+            client1.Close();
+            client2.Close();
+            clientStream1.Close();
+            clientStream2.Close();
+            client1.Dispose();
+            client2.Dispose();
+            clientStream1.Dispose();
+            clientStream2.Dispose();
+            clientThread1.Abort();
+            clientThread2.Abort();
+            GC.SuppressFinalize(clientThread1);
+            GC.SuppressFinalize(clientThread2);
+            Instance= null;
+
+           listenerThread.Abort();
+            GC.SuppressFinalize(this);
+            GC.Collect();
         }
         catch (Exception e)
         {
             Debug.Log("Error stopping server: " + e.Message);
+            GC.SuppressFinalize(this);
+            GC.Collect();
         }
-
+        Instance = null;
+        listener=null;
+        client1 = null;
+        client2 = null;
+        clientStream1 = null;   
+        clientStream2 = null;
+        clientThread1 = null;
+        clientThread2 = null;
         Debug.Log("Server stopped.");
     }
 
@@ -332,11 +350,7 @@ public class GameServer : IDisposable
     {
         if (!message.Contains("Action"))
             return false;
-<<<<<<< HEAD
         SendMessageToPlayer(player == 1 ? 2 : 1, (message));
-=======
-        SendMessageToPlayer(player == 1 ? 2 : 1, Encoding.ASCII.GetBytes(message));
->>>>>>> 6dd6e3b580ac93c7563388730948302c7d5d09ad
         return true;
     }
 

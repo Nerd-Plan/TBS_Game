@@ -25,7 +25,14 @@ public class InputManager : MonoBehaviour
         playerInputActions.Player.Enable();
     }
 
-
+    public bool IsPuseBtnPreesed()
+    {
+#if USE_NEW_INPUT_SYSTEM
+        return playerInputActions.Player.Puse.WasPressedThisFrame();
+#else
+        return Input.escape;
+#endif
+    }
     public Vector2 GetMouseScreenPosition()
     {
 #if USE_NEW_INPUT_SYSTEM

@@ -22,6 +22,7 @@ public class GameClient : IDisposable
     public event Action<byte> OnSwitchTurns;
     Thread receivemessagethread;
     public bool IsOwner = false;
+    public static GameClient Instance { get; private set; }
     #endregion
 
     #region Game Prop's 
@@ -42,6 +43,17 @@ public class GameClient : IDisposable
 
     #region Client Start And Stop
 
+    public GameClient()
+    {
+        if (Instance == null && Instance != this)
+        {
+            Instance = this;
+        }
+        else
+        {
+            return;
+        }
+    }
     public void Connect()
     {
         try
@@ -96,25 +108,38 @@ public class GameClient : IDisposable
 
         try
         {
+            SceneManager.sceneLoaded -= OnSceneLoaded;
+            BaseAction.OnAnyActionStarted -= Action_ActionStarted;
+            TurnSystem.Instance.OnTurnChanged -= OnTurnChanged;
             if (client.Connected)
                 SendMessage("Log Out");
-            client?.Close();
-            stream?.Close();
-            receivemessagethread?.Abort();
+            client.Close();
+            stream.Close();
+            client.Dispose();
+            stream.Dispose();
             Debug.Log("Disconnected from server.");
+            receivemessagethread.Abort();
+            GC.SuppressFinalize(receivemessagethread);
+            GC.SuppressFinalize(this);
+            GC.Collect();
         }
         catch (Exception e)
         {
             Debug.Log("Error disconnecting from server: " + e.Message);
+            GC.SuppressFinalize(this);
+            GC.Collect();
         }
+        Instance = null;
+        client = null;
+        stream = null;  
+        receivemessagethread = null;
     }
     #endregion
 
     #region Client Only
 
     public void SendMessage(string message)
-    {
-
+    {     
         if (client.Connected)
         {
             try
@@ -140,6 +165,10 @@ public class GameClient : IDisposable
         {
             // Handle error, e.g. client is null or not connected
             Debug.Log("Error sending data: client is not connected");
+            if(!client.Connected)
+            {
+                Disconnect();
+            }
         }
     }
     public void ReceiveMessage()
@@ -148,7 +177,7 @@ public class GameClient : IDisposable
         {         
             int bytesRead;
             string response;
-            while (true)
+            while (client.Connected)
             {
                 // read data from the server into the buffer
                 bytesRead = stream.Read(buffer, 0, buffer.Length);
@@ -161,11 +190,16 @@ public class GameClient : IDisposable
         }
         catch (Exception e)
         {
-            Debug.Log("Error receiving message: " + e.Message);
+            Debug.Log("Error receiving message: " + e.Message);   
+            if (e.Message.Contains("Thread"))
+            {
+                return;
+            }
             if (client.Connected)
                 return;
-            Disconnect();
             OnClientDisconnected?.Invoke(byte.MinValue);
+            Disconnect();
+            GC.SuppressFinalize(this);
         }
     }
 

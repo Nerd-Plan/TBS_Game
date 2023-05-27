@@ -11,11 +11,12 @@ namespace TBS.NetWork
         private void Awake()
         {
             SceneManager.sceneLoaded+=OnSceneLoaded;    
+            DontDestroyOnLoad(gameObject);
         }
         private void OnSceneLoaded(Scene scene, LoadSceneMode mode)
         {
             if (scene.name != "MultplayerGameScene") return;
-            SetBoard();
+            Invoke(nameof(SetBoard), .4f);
            
         }
 
@@ -34,12 +35,16 @@ namespace TBS.NetWork
 
         private void OnApplicationQuit()
         {
-            GameServer.Instance.Stop();    
-            
+            SceneManager.sceneLoaded -= OnSceneLoaded;
+            GameServer.Instance.Stop();
+            GC.SuppressFinalize(this);
+
         }
         private void OnDestroy()
         {
+            SceneManager.sceneLoaded -= OnSceneLoaded;
             GameServer.Instance.Stop();
+            GC.SuppressFinalize(this);
         }
 
         public int PortNumber()

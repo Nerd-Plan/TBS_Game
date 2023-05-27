@@ -15,11 +15,17 @@ namespace TBS.NetWork
         {
             gameClient.Stop();
             gameClient.Dispose();
+            Instance = null;
+            GC.SuppressFinalize(gameClient);
+
         }
         private void OnApplicationQuit()
         {
             gameClient.Stop();
             gameClient.Dispose();
+            Instance = null;
+            GC.SuppressFinalize(gameClient);
+
         }
         public void ConnectToServer(string ip,int port)
         {

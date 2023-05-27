@@ -70,7 +70,7 @@ namespace TBS.UI
             ShowHost.text = GetLocalIPAddressInCode().ToString();
             port.text = ShowPort.text;
             ip.text = ShowHost.text;
-            Invoke("StartClient", .2f);
+            StartClient();
 
         }
         public int GetLocalIPAddressInCode()
@@ -134,6 +134,10 @@ namespace TBS.UI
         public void StartSinglePlayer()
         {
             SceneManager.LoadScene(1);
+        }
+        public void Quit()
+        {
+            Application.Quit();
         }
     }
 }

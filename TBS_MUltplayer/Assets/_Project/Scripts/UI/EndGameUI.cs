@@ -10,9 +10,32 @@ public class EndGameUI : MonoBehaviour
     [SerializeField] GameObject end_game_ui;
     [SerializeField] GameObject start_game_ui;
     [SerializeField] TMP_Text winner_loser_text;
+
+    [SerializeField] GameObject options_ui;
     private void Start()
     {
         Unit.OnAnyUnitDead += OnCheckWinner;  
+    }
+    bool puse=false;
+    private void Update()
+    {
+        if (!InputManager.Instance.IsPuseBtnPreesed())
+            return;
+        if(!puse)
+        {
+            puse= true;
+            //Time.timeScale = 0;
+            start_game_ui.SetActive(false );
+            options_ui.SetActive(true );
+        }
+        else if(puse)
+        {
+            puse = false;
+            //Time.timeScale = 1;
+            start_game_ui.SetActive(true);
+            options_ui.SetActive(false);
+        }
+
     }
 
     private void OnCheckWinner(object sender, EventArgs e)
@@ -30,16 +53,18 @@ public class EndGameUI : MonoBehaviour
     }
     public void GoToMenu()
     {
-        if (SceneManager.GetActiveScene().name.StartsWith("MultplayerGameScene"))
-        { 
-        if (Client.Instance.GetGameClient().IsOwner)
-            Destroy(FindObjectOfType<Server>().gameObject);         
-        Destroy(FindObjectOfType<Client>().gameObject);
-        Destroy(FindObjectOfType<MainThreadDispatcher>().gameObject);
-        Destroy(FindObjectOfType<GameManger>().gameObject);
+        if (SceneManager.GetActiveScene().name.StartsWith("MultplayerGameScene")&& GameClient.Instance != null)
+        {                   
+            if (Client.Instance.GetGameClient().IsOwner)
+                Destroy(FindObjectOfType<Server>().gameObject);         
+            Destroy(FindObjectOfType<Client>().gameObject);
+            Destroy(FindObjectOfType<MainThreadDispatcher>().gameObject);
+            Destroy(FindObjectOfType<GameManger>().gameObject);
+            
         }
 
 
         SceneManager.LoadScene(0);
     }
+    
 }
