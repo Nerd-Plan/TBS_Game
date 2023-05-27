@@ -81,6 +81,8 @@ namespace TBS.UI
                 if (ip.AddressFamily == AddressFamily.InterNetwork)
                 {
                     string myip= ip.ToString();
+
+                    Debug.Log(ip.ToString());
                     IPAddress ipAddress = IPAddress.Parse(myip);
 
                     byte[] ipAddressBytes = ipAddress.GetAddressBytes();
@@ -96,6 +98,8 @@ namespace TBS.UI
             IPAddress ipAddress = new IPAddress(ipAddressBytes);
 
             string ipAddressString = ipAddress.ToString();
+
+            Debug.Log(ipAddressString);
             return ipAddressString;
         }
 

@@ -332,7 +332,11 @@ public class GameServer : IDisposable
     {
         if (!message.Contains("Action"))
             return false;
+<<<<<<< HEAD
         SendMessageToPlayer(player == 1 ? 2 : 1, (message));
+=======
+        SendMessageToPlayer(player == 1 ? 2 : 1, Encoding.ASCII.GetBytes(message));
+>>>>>>> 6dd6e3b580ac93c7563388730948302c7d5d09ad
         return true;
     }
 
