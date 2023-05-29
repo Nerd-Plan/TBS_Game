@@ -185,6 +185,8 @@ public class GameClient : IDisposable
                 byte[] encryptedData = new byte[bytesRead];
                 Array.Copy(buffer, 0, encryptedData, 0, bytesRead);
                 response = EncryptionHelper.Decrypt(encryptedData, bytesRead, encryptionKeys.private_key);
+                if (response == "")
+                    continue;
                 Debug.Log(response);
                 DoAsTheServerCommends(response);
             }

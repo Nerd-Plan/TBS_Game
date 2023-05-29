@@ -8,6 +8,7 @@ using Random = System.Random;
 using TBS.Threading;
 using System.Collections.Generic;
 using System.IO;
+using System.Threading.Tasks;
 
 public class GameServer : IDisposable
 {
@@ -361,13 +362,23 @@ public class GameServer : IDisposable
     #region Game
     public void SetBoard()
     {
-        SendMessageToPlayer(1, ($"SetBoard"));
-        SendMessageToPlayer(2, ($"SetBoard"));
-        SendMessageToPlayer(1, ($"Instantiate Units On Side One"));
-        SendMessageToPlayer(2, ($"Instantiate Units On Side Two"));
-
+        SendStartBoardMessages();
+        Task.Delay(1000).Wait();
+        SendInstatiateMessages();
     }
 
+    private void SendInstatiateMessages()
+    {
+        SendMessageToPlayer(1, "Instantiate Units On Side One");
+        SendMessageToPlayer(2, "Instantiate Units On Side Two");
+    }
+
+    private void SendStartBoardMessages()
+    {
+        SendMessageToPlayer(1,"SetBoard");
+        SendMessageToPlayer(2,"SetBoard");
+    
+    }
 
     public void Dispose()
     {
