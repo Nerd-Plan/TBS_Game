@@ -56,7 +56,9 @@ namespace TBS.UI
             }
             catch
             {               
-                    ClientCancel();              
+                    ClientCancel();
+                LoadingScreen.SetActive(false);
+                MultiplayerUI.SetActive(true);
             }           
         }
         

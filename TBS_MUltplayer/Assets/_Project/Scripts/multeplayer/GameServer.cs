@@ -261,11 +261,12 @@ public class GameServer : IDisposable
                     Debug.Log("Player " + player + " disconnected.");
                     DisconnectPlayer(player);
                     shouldListen = false;
+                    Stop();
                     return;
                 }
                 byte[] encryptedData = new byte[bytesRead];
                 Array.Copy(data,encryptedData, bytesRead);
-                string message = EncryptionHelper.Decrypt(encryptedData, encryptionKeys.private_key);
+                string message = EncryptionHelper.Decrypt(encryptedData, bytesRead,encryptionKeys.private_key);
                 Debug.Log("Player " + player + " sent: " + message);
                                 
                 if (message.Contains("Log Out"))
@@ -273,6 +274,7 @@ public class GameServer : IDisposable
                     Debug.Log("Player " + player + " disconnected.");
                     DisconnectPlayer(player);
                     shouldListen = false;
+                    Stop();
                     return;
                 }
                     HandleMessagesFromClient(player, message);
@@ -362,7 +364,7 @@ public class GameServer : IDisposable
         SendMessageToPlayer(1, ($"SetBoard"));
         SendMessageToPlayer(2, ($"SetBoard"));
         SendMessageToPlayer(1, ($"Instantiate Units On Side One"));
-        SendMessageToPlayer(2, ("Instantiate Units On Side Two"));
+        SendMessageToPlayer(2, ($"Instantiate Units On Side Two"));
 
     }
 

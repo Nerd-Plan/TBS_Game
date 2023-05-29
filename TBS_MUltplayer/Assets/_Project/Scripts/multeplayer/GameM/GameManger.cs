@@ -54,9 +54,9 @@ public class GameManger : MonoBehaviour
     }
     public void GameClient_OnClientDisconnected(byte n)
     {
-       ////if (!SceneManager.GetActiveScene().name.Contains("NetWorkGame"))
-       ////         return;
-       //// FindObjectOfType<EndGameUI>().BackToMenu();
+        if (!SceneManager.GetActiveScene().name.Contains("NetWorkGame"))
+                 return;
+         
     }
 
     

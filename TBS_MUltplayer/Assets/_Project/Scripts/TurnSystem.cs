@@ -2,6 +2,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 public class TurnSystem : MonoBehaviour
 {
@@ -12,7 +13,7 @@ public class TurnSystem : MonoBehaviour
     public event EventHandler OnTurnChanged;
     public bool IsEndGame=false;    
 
-    private int turnNumber = 1;
+    private int turnNumber = 0;
     private bool isPlayerTurn = true;
 
 
@@ -25,6 +26,11 @@ public class TurnSystem : MonoBehaviour
             return;
         }
         Instance = this;
+
+        if(SceneManager.GetActiveScene().name.Contains("GameScene 1"))
+        {
+            turnNumber = 1;
+        }
     }
 
 

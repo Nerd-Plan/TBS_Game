@@ -111,6 +111,7 @@ public class GameClient : IDisposable
             SceneManager.sceneLoaded -= OnSceneLoaded;
             BaseAction.OnAnyActionStarted -= Action_ActionStarted;
             TurnSystem.Instance.OnTurnChanged -= OnTurnChanged;
+            OnClientDisconnected?.Invoke(byte.MinValue);
             if (client.Connected)
                 SendMessage("Log Out");
             client.Close();
@@ -183,7 +184,7 @@ public class GameClient : IDisposable
                 bytesRead = stream.Read(buffer, 0, buffer.Length);
                 byte[] encryptedData = new byte[bytesRead];
                 Array.Copy(buffer, 0, encryptedData, 0, bytesRead);
-                response = EncryptionHelper.Decrypt(encryptedData, encryptionKeys.private_key);
+                response = EncryptionHelper.Decrypt(encryptedData, bytesRead, encryptionKeys.private_key);
                 Debug.Log(response);
                 DoAsTheServerCommends(response);
             }
@@ -191,13 +192,8 @@ public class GameClient : IDisposable
         catch (Exception e)
         {
             Debug.Log("Error receiving message: " + e.Message);   
-            if (e.Message.Contains("Thread"))
-            {
-                return;
-            }
             if (client.Connected)
                 return;
-            OnClientDisconnected?.Invoke(byte.MinValue);
             Disconnect();
             GC.SuppressFinalize(this);
         }
