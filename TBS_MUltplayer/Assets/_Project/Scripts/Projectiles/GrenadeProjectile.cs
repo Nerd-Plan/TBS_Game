@@ -53,7 +53,7 @@ public class GrenadeProjectile : MonoBehaviour
             OnAnyGrenadeExploded?.Invoke(this, EventArgs.Empty);
 
             trailRenderer.transform.parent = null;
-
+            AudioManger.Instance.PlaySFX("grenade_explode3");
             Instantiate(grenadeExplodeVfxPrefab, targetPosition + Vector3.up * 1f, Quaternion.identity);
 
             Destroy(gameObject);

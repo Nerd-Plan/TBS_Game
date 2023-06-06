@@ -209,6 +209,7 @@ public class GameClient : IDisposable
     {
         SendMessage("Scene loaded: " + scene.name);
         ListenToGameEvents();
+        AudioManger.Instance.PlayMusic("GameMainMelody");
     }
 
     private void ListenToGameEvents()

@@ -61,6 +61,7 @@ public class SwordAction : BaseAction
                 stateTimer = afterHitStateTime;
                 targetUnit.Damage(100);
                 OnAnySwordHit?.Invoke(this, EventArgs.Empty);
+                AudioManger.Instance.PlaySFX("Sword");
                 break;
             case State.SwingingSwordAfterHit:
                 OnSwordActionCompleted?.Invoke(this, EventArgs.Empty);

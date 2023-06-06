@@ -72,6 +72,7 @@ public class GrenadeAction : BaseAction
         targetpos = LevelGrid.Instance.GetWorldPosition(gridPosition);
         Transform grenadeProjectileTransform = Instantiate(grenadeProjectilePrefab, unit.GetWorldPosition(), Quaternion.identity);
         GrenadeProjectile grenadeProjectile = grenadeProjectileTransform.GetComponent<GrenadeProjectile>();
+        AudioManger.Instance.PlaySFX("grenade_throw");
         grenadeProjectile.Setup(gridPosition, OnGrenadeBehaviourComplete);
 
         ActionStart(onActionComplete);

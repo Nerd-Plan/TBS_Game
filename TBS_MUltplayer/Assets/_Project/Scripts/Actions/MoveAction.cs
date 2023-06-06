@@ -59,7 +59,7 @@ public class MoveAction : BaseAction
         {
             positionList.Add(LevelGrid.Instance.GetWorldPosition(pathGridPosition));
         }
-
+        AudioManger.Instance.PlaySFX("Move",true);
         OnStartMoving?.Invoke(this, EventArgs.Empty);
 
         ActionStart(onActionComplete);

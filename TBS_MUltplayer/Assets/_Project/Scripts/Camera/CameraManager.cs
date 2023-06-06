@@ -1,28 +1,30 @@
 using System;
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 
 public class CameraManager : MonoBehaviour
 {
     
-    [SerializeField] private GameObject actionCameraGameObject;
+    [SerializeField]  GameObject actionCameraGameObject;
 
     private void Start()
     {
+        HideActionCamera();
         BaseAction.OnAnyActionStarted += BaseAction_OnAnyActionStarted;
         BaseAction.OnAnyActionCompleted += BaseAction_OnAnyActionCompleted;
-
-        HideActionCamera();
     }
 
     private void ShowActionCamera()
     {
+        if (!actionCameraGameObject)
+            actionCameraGameObject = FindInActiveObjectByName("ActionVirtualCamera");
+        Debug.Log(actionCameraGameObject.name);
         actionCameraGameObject.SetActive(true);
     }
 
     private void HideActionCamera()
     {
+        if(!actionCameraGameObject)
+            actionCameraGameObject = FindInActiveObjectByName("ActionVirtualCamera");
         actionCameraGameObject.SetActive(false);
     }
 
@@ -31,6 +33,7 @@ public class CameraManager : MonoBehaviour
         switch (sender)
         {
             case ShootAction shootAction:
+                ShowActionCamera();
                 Unit shooterUnit = shootAction.GetUnit();
                 Unit targetUnit = shootAction.GetTargetUnit();
 
@@ -49,8 +52,7 @@ public class CameraManager : MonoBehaviour
 
                 actionCameraGameObject.transform.position = actionCameraPosition;
                 actionCameraGameObject.transform.LookAt(targetUnit.GetWorldPosition() + cameraCharacterHeight);
-                
-                ShowActionCamera();
+               
                 break;
         }
     }
@@ -63,5 +65,20 @@ public class CameraManager : MonoBehaviour
                 HideActionCamera();
                 break;
         }
+    }
+    GameObject FindInActiveObjectByName(string name)
+    {
+        Transform[] objs = Resources.FindObjectsOfTypeAll<Transform>() as Transform[];
+        for (int i = 0; i < objs.Length; i++)
+        {
+            if (objs[i].hideFlags == HideFlags.None)
+            {
+                if (objs[i].name == name)
+                {
+                    return objs[i].gameObject;
+                }
+            }
+        }
+        return null;
     }
 }

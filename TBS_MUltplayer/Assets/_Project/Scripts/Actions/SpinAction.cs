@@ -29,7 +29,7 @@ public class SpinAction : BaseAction
     public override void TakeAction(GridPosition gridPosition, Action onActionComplete)
     {
         totalSpinAmount = 0f;
-
+        AudioManger.Instance.PlaySFX("Spin");
         ActionStart(onActionComplete);
     }
 

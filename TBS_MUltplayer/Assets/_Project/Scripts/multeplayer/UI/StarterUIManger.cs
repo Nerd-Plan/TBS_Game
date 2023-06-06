@@ -136,6 +136,7 @@ namespace TBS.UI
         public void StartSinglePlayer()
         {
             SceneManager.LoadScene(1);
+            AudioManger.Instance.PlayMusic("GameMainMelody");
         }
         public void Quit()
         {

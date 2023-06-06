@@ -90,6 +90,7 @@ public class ShootAction : BaseAction
 
     private void Shoot()
     {
+        AudioManger.Instance.PlaySFX("Shoot");
         OnAnyShoot?.Invoke(this, new OnShootEventArgs
         {
             targetUnit = targetUnit,

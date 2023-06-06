@@ -4,11 +4,16 @@ using UnityEngine;
 using UnityEngine.Audio;
 public class Options : MonoBehaviour
 {
-    public AudioMixer audioMixer;
-   public void SetAudio(float volume)
+    
+   public void SetMusicVolume(float volume)
    {
-        audioMixer.SetFloat("volume", volume);
+        AudioManger.Instance.SetMusicVolume(volume);
    }
+    public void SetSFXVolume(float volume)
+    {
+        AudioManger.Instance.SetVFXVolume(volume);
+    }
+
     public void SetQuailty(int quailty_index)
     {
         QualitySettings.SetQualityLevel(quailty_index);
