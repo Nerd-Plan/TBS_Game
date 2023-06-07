@@ -30,43 +30,35 @@ namespace TBS.UI
         [SerializeField] GameObject ClientConnectedToServerUI;
 
         [SerializeField] GameObject LoadingScreen;
-        #region Start and Stop            
+
+        #region Start and Stop     
         public void StartClient()
         {
-
+            MultiplayerUI.SetActive(false);
             client = Instantiate(client_prefab, Vector3.zero, Quaternion.identity).GetComponent<Client>();
-            client.ConnectToServer(GetLocalIPAddressFromCode(int.Parse(ip.text)), int.Parse(port.text));
+            client.ConnectToServer(GetLocalIPAddressFromCode(int.Parse(ip.text)), int.Parse(port.text));                     
             ShowPort.text = int.Parse(port.text).ToString();
             ShowHost.text= int.Parse(ip.text).ToString();
             if (Server != null)
             {               
                client.GetGameClient().IsOwner = true;   
             }
-            LoadingScreen.SetActive(true);
-            MultiplayerUI.SetActive(false);
             G_M = Instantiate(Game_Manger, Vector3.zero, Quaternion.identity);
-            try
+            if(client.GetGameClient().HasClinet())
             {
-                if (client.GetGameClient().IsConnected())
-                {
-                    MultiplayerUI.SetActive(false);
-                    ClientConnectedToServerUI.SetActive(true);
-                    LoadingScreen.SetActive(false);
-                }
+                ClientConnectedToServerUI.SetActive(true); 
             }
-            catch
-            {               
-                    ClientCancel();
-                LoadingScreen.SetActive(false);
+            else
+            {
+                Destroy(G_M);
                 MultiplayerUI.SetActive(true);
-            }           
+                Back();
+            }    
         }
         
         public void StartServer()
         {
             Server = Instantiate(Server_prefab, Vector3.zero, Quaternion.identity).GetComponent<Server>();
-            MultiplayerUI.SetActive(false);
-            LoadingScreen.SetActive(true);
             Server.StartServer(0);
             ShowPort.text = Server.PortNumber().ToString();
             ShowHost.text = GetLocalIPAddressInCode().ToString();
@@ -104,7 +96,8 @@ namespace TBS.UI
             Debug.Log(ipAddressString);
             return ipAddressString;
         }
-
+       
+        
 
         public void Back()
         {

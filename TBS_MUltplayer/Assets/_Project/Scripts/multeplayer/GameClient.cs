@@ -1,4 +1,5 @@
 using System;
+using System.Net;
 using System.Net.Sockets;
 using System.Text;
 using System.Threading;
@@ -23,6 +24,7 @@ public class GameClient : IDisposable
     Thread receivemessagethread;
     public bool IsOwner = false;
     public static GameClient Instance { get; private set; }
+    int max_recv_time_out = 0;
     #endregion
 
     #region Game Prop's 
@@ -55,15 +57,16 @@ public class GameClient : IDisposable
         }
     }
     public void Connect()
-    {
+    {  
         try
         {
             encryptionKeys = new EncryptionKeys();
             client = new TcpClient(ipAddress, port);
+            max_recv_time_out = client.ReceiveTimeout;
+            client.ReceiveTimeout = 1000;
             stream = client.GetStream();
 
             ExchangePublicKeys();
-
 
             receivemessagethread = new Thread(new ThreadStart(ReceiveMessage));
             receivemessagethread.Start();
@@ -73,6 +76,11 @@ public class GameClient : IDisposable
         catch (Exception e)
         {
             Debug.Log("Error connecting to server: " + e.Message);
+            client = null;
+            stream = null;  
+            receivemessagethread?.Abort();
+            receivemessagethread=null;
+            SceneManager.sceneLoaded -= OnSceneLoaded;
             return;
         }
     }
@@ -92,10 +100,17 @@ public class GameClient : IDisposable
     {
         Stop();
     }
-
+  
     public bool IsConnected()
     {
         return client.Connected;
+    }
+    public bool HasClinet()
+    {
+        if (client != null)
+            if(client.Connected)           
+                return true;           
+        return false;
     }
 
     public void Stop()
@@ -174,6 +189,7 @@ public class GameClient : IDisposable
     }
     public void ReceiveMessage()
     {
+        client.ReceiveTimeout=max_recv_time_out;
         try
         {         
             int bytesRead;
@@ -293,6 +309,8 @@ public class GameClient : IDisposable
         }
         return false;
     }
+
+    
 
     #endregion
 

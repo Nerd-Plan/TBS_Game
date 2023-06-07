@@ -29,7 +29,6 @@ public class AudioManger : MonoBehaviour
     {
         SetMusicVolume(PlayerPrefs.GetFloat("music_volume"));
         SetVFXVolume(PlayerPrefs.GetFloat("SFX_volume"));
-
     }
 
     public void PlayMusic(string name, bool islooping = true)
@@ -80,6 +79,14 @@ public class AudioManger : MonoBehaviour
         PlayerPrefs.SetFloat("SFX_volume", volume);
     }
     
+    public void StopMusic()
+    { 
+        music_source.Stop(); 
+    }
+    public void StopVFX()
+    {
+        sfx_source.Stop();
+    }
 }
 
  

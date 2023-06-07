@@ -63,7 +63,8 @@ public class EndGameUI : MonoBehaviour
             
         }
 
-
+        AudioManger.Instance.StopVFX(); 
+        AudioManger.Instance.StopMusic();
         SceneManager.LoadScene(0);
     }
     
