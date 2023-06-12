@@ -40,16 +40,25 @@ public class EndGameUI : MonoBehaviour
 
     private void OnCheckWinner(object sender, EventArgs e)
     {
-        if (UnitManager.Instance.GetEnemyUnitList().Count != 0&& UnitManager.Instance.GetFriendlyUnitList().Count != 0) { return; }
-        if (SceneManager.GetActiveScene().name.StartsWith("GameScene 1"))
+        if (UnitManager.Instance.GetEnemyUnitList().Count != 0&& UnitManager.Instance.GetFriendlyUnitList().Count != 0) { return; } 
+        if(UnitManager.Instance.GetEnemyUnitList().Count == 0)
         {
-            if (!FindObjectOfType<LevelScripting>().GetHasShowFirstHider())
+            if(!FindObjectOfType<LevelScripting>().GetHasShowFirstHider())
+            {
                 return;
-        }    
+            }
+        }
+
         end_game_ui.SetActive(true);    
         start_game_ui.SetActive(false);
         TurnSystem.Instance.IsEndGame = true;
+        AudioManger.Instance.StopMusic();
+        AudioManger.Instance.StopVFX();
         winner_loser_text.text = UnitManager.Instance.GetEnemyUnitList().Count == 0 ? "YOU win" : "YOu Lose";
+        if(winner_loser_text.text.Contains("win"))        
+            AudioManger.Instance.PlaySFX("Win");       
+         else
+            AudioManger.Instance.PlaySFX("Lose");
     }
     public void GoToMenu()
     {

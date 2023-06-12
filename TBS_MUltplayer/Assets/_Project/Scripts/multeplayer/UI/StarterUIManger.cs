@@ -5,6 +5,8 @@ using TMPro;
 using System.Net;
 using System.Net.Sockets;
 using System;
+using System.Text;
+using System.Linq;
 
 namespace TBS.UI
 {
@@ -31,9 +33,13 @@ namespace TBS.UI
 
         [SerializeField] GameObject LoadingScreen;
 
-        #region Start and Stop     
+        #region Start and Stop   
         public void StartClient()
         {
+            if(ip.text==string.Empty|| port.text == string.Empty ||port.text.Any(char.IsLetter)|| ip.text.Any(char.IsLetter))
+            {
+                return;
+            }
             MultiplayerUI.SetActive(false);
             client = Instantiate(client_prefab, Vector3.zero, Quaternion.identity).GetComponent<Client>();
             client.ConnectToServer(GetLocalIPAddressFromCode(int.Parse(ip.text)), int.Parse(port.text));                     
@@ -69,30 +75,27 @@ namespace TBS.UI
         }
         public int GetLocalIPAddressInCode()
         {
-            var host = Dns.GetHostEntry(Dns.GetHostName());
-            foreach (var ip in host.AddressList)
+            string localIP;
+            using (Socket socket = new Socket(AddressFamily.InterNetwork, SocketType.Dgram, 0))
             {
-                if (ip.AddressFamily == AddressFamily.InterNetwork)
-                {
-                    string myip= ip.ToString();
-
-                    Debug.Log(ip.ToString());
-                    IPAddress ipAddress = IPAddress.Parse(myip);
-
-                    byte[] ipAddressBytes = ipAddress.GetAddressBytes();
-                    int ipAddressInt = BitConverter.ToInt32(ipAddressBytes, 0);
-                    return ipAddressInt;
-                }
+                socket.Connect("8.8.8.8", 65530);
+                IPEndPoint endPoint = socket.LocalEndPoint as IPEndPoint;
+                localIP = endPoint.Address.ToString();
             }
-            throw new Exception("No network adapters with an IPv4 address in the system!");
+            string[] octets = localIP.Split('.');
+            int decimalValue = 0;
+            for (int i = 0; i < 4; i++)
+            {
+                decimalValue += int.Parse(octets[i]) * (int)Math.Pow(256, (3 - i));
+            }
+            return decimalValue;
         }
         public string GetLocalIPAddressFromCode(int ipAddressInt)
         {
             byte[] ipAddressBytes = BitConverter.GetBytes(ipAddressInt);
+            Array.Reverse(ipAddressBytes); // Reverse the byte order
             IPAddress ipAddress = new IPAddress(ipAddressBytes);
-
             string ipAddressString = ipAddress.ToString();
-
             Debug.Log(ipAddressString);
             return ipAddressString;
         }

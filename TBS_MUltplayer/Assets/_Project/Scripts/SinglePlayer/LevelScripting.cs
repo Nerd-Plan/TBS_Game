@@ -30,7 +30,7 @@ public class LevelScripting : MonoBehaviour
 
     private void LevelGrid_OnAnyUnitMovedGridPosition(object sender, LevelGrid.OnAnyUnitMovedGridPositionEventArgs e)
     {
-        if (e.toGridPosition.z == 5 && !hasShownFirstHider)
+        if (e.toGridPosition.z == 5 && !hasShownFirstHider&&!e.unit.IsEnemy())
         {
             hasShownFirstHider = true;
             SetActiveGameObjectList(hider1List, false);
