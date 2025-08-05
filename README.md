@@ -9,7 +9,8 @@ The game allows players to connect and play against each other whenever they wis
 
 Featuring multiple **game modes** and **difficulty levels**, the game targets **PC users and gamers** seeking to break from routine and tackle diverse challenges in a virtual battlefield. The primary audience is **strategy game enthusiasts**, especially **teens and young adults up to age 25**, as they are most likely to have the time and dedication for such games.
 
-to start the game press on run <img width="2878" height="1684" alt="image" src="https://github.com/user-attachments/assets/fd852ae3-64ea-4ae7-92f1-d2bd0fbe257b" />
+to start the game go to Runs Forlder and press and exe file of the game 
+<img width="2878" height="1684" alt="image" src="https://github.com/user-attachments/assets/fd852ae3-64ea-4ae7-92f1-d2bd0fbe257b" />
 
 
 
