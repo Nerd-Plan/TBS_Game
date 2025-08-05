@@ -1,6 +1,12 @@
-# TBS_Game
-Game for My Cyber project in high school
 
-you are more than free to download the project on 2 diffrent computers and try to play with eatch other
+**Game Summary**
+This is a **Turn-Based Strategy Game (TBS)** designed to immerse players in the tension and decision-making of warfare, putting the fate of their virtual soldiers entirely in their own hands. The game supports **1v1 matches** or **battles against the computer**.
 
-be aware you will doanload the unity project the game.
+At the start of each match, game pieces are generated. From there, players must assess the battlefield and determine the optimal moves for their units, taking into account the limited number of moves available.
+
+Defeating the computer is a testament to the player’s **spatial awareness** and **strategic decision-making skills**.
+
+The game allows players to connect and play against each other whenever they wish. However, once a match ends, all player data is erased to keep each game fresh and self-contained.
+
+Featuring multiple **game modes** and **difficulty levels**, the game targets **PC users and gamers** seeking to break from routine and tackle diverse challenges in a virtual battlefield. The primary audience is **strategy game enthusiasts**, especially **teens and young adults up to age 25**, as they are most likely to have the time and dedication for such games.
+
